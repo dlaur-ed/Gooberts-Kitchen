@@ -1,46 +1,51 @@
-# Goobert's Kitchen — PWA Test Build
+# Goobert's Kitchen — MVP v0.1
 
-This is the bare framework: an installable, offline-capable app shell with no
-real features yet. The goal is just to prove it works on both phones before
-building anything on top.
+Real app, replacing the test-shell build. This version has:
+- **Recipe Library** — grid of recipe cards with category filter chips
+- **Recipe Detail** — full digital recipe (macros, ingredients you can tap to
+  check off, method, notes), styled to match the printable cards
 
-## Deploy it (pick one — both are free and take ~2 minutes)
+Not in yet (next up): Search, Favourites.
 
-### Option A: Netlify Drop (fastest, no account needed to start)
-1. Go to https://app.netlify.com/drop
-2. Drag the whole `goobert-pwa` folder onto the page
-3. You'll get a live URL like `https://random-name-123.netlify.app`
+## How data flows
 
-### Option B: GitHub Pages (better if you'll keep iterating)
-1. Create a new GitHub repo, push these files to it
-2. Repo Settings → Pages → set source to the `main` branch, root folder
-3. Your URL will be `https://yourusername.github.io/reponame/`
+```
+recipes.csv  →  csv_to_json.py  →  data/recipes.json  →  app.js renders it
+```
 
-## Test it on both phones
+Whenever you add/edit a recipe in `recipes.csv`, run:
+```
+python csv_to_json.py
+```
+then re-upload `data/recipes.json` (and any new images in `assets/`) to GitHub.
 
-1. Open the deployed URL in **Safari on her iPhone**
-   - Tap the **Share** icon → **Add to Home Screen** → **Add**
-   - Open the app from the Home Screen icon (not Safari) — the checklist
-     should show "Running as installed app: Yes"
-2. Open the same URL in **Chrome on your Android**
-   - Chrome should show an **Install** prompt automatically (or via the
-     ⋮ menu → "Install app")
-3. On either phone, turn on Airplane Mode and reopen the app from the Home
-   Screen — it should still load and the checklist should say "Offline" but
-   still show a loaded page. That confirms the service worker cache works.
+## Deploying (same repo you already have)
 
-## What's in here
+This replaces the contents of the `Gooberts-Kitchen` repo you already have
+live. Overwrite these files:
+- `index.html`
+- `styles.css`
+- `app.js`
+- `manifest.json`
+- `service-worker.js`
 
-- `index.html` — the test page + live checklist (loaded / offline support /
-  installed / connection status)
-- `manifest.json` — tells the phone this is installable, sets the app name,
-  icon, and colors
-- `service-worker.js` — caches the app shell so it still opens offline
-- `icons/` — placeholder bowl icon (192px + 512px) — swap these out once
-  Baby Goobert artwork is ready for the icon
+Add these (new):
+- `data/recipes.json` (upload into a `data/` folder — same subfolder trick as
+  the icons: go to `github.com/USERNAME/Gooberts-Kitchen/upload/main/data`)
+- `assets/*.png` — all the recipe photos (upload into `assets/` the same way)
+- `recipes.csv` and `csv_to_json.py` (root level, for future updates)
 
-## Next step
+The `icons/` folder you already have stays as-is — no changes there.
 
-Once this is confirmed working on both phones, we build the real MVP on top
-of this shell: Recipe Library, Recipe Detail (from your printable cards),
-Search, Favourites.
+## After deploying
+
+Close and reopen the app on both phones (force-close, don't just background
+it) so the service worker picks up the new version. You should see the real
+recipe grid instead of the "Framework Test" checklist page.
+
+## What's simple/on purpose right now
+
+- No search, no favourites yet — coming next
+- No build tooling — plain HTML/CSS/JS, edit directly on GitHub like before
+- Ingredient checkboxes don't persist between visits yet (that arrives with
+  the Favourites/local-storage work)
