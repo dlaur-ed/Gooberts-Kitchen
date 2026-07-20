@@ -1,0 +1,323 @@
+[
+  {
+    "id": "B01",
+    "category": "breakfast",
+    "title": "Greek Yogurt Protein Bowl",
+    "calories": 405,
+    "protein": 30,
+    "carbs": 42,
+    "fat": 10,
+    "fiber": 8,
+    "servings": "1",
+    "prep_time": "10 min",
+    "total_time": "10 min",
+    "difficulty": 1,
+    "dishes": 1,
+    "image": "greek_yogurt_bowl.png",
+    "ingredients": [
+      "200 g Greek yogurt (2%)",
+      "40 g rolled oats",
+      "1 tbsp honey",
+      "1/2 banana",
+      "50 g blueberries",
+      "1 tbsp almond butter",
+      "1 tsp chia seeds"
+    ],
+    "method": [
+      "Add Greek yogurt to a bowl.",
+      "Top with oats, banana, blueberries and chia seeds.",
+      "Drizzle honey and almond butter on top.",
+      "Enjoy!"
+    ],
+    "notes": [
+      "Use any berries you have.",
+      "Add a scoop of protein powder for extra protein.",
+      "Great for busy mornings!"
+    ],
+    "tags": [
+      "Early Morning Friendly",
+      "Meal Prep"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "S01",
+    "category": "snack",
+    "title": "Cottage Cheese & Berries",
+    "calories": 210,
+    "protein": 17,
+    "carbs": 18,
+    "fat": 6,
+    "fiber": 5,
+    "servings": "1",
+    "prep_time": "5 min",
+    "total_time": "5 min",
+    "difficulty": 1,
+    "dishes": 1,
+    "image": "cottage_cheese_berries.png",
+    "ingredients": [
+      "150 g cottage cheese",
+      "100 g mixed berries",
+      "1 tsp honey",
+      "10 g chopped almonds"
+    ],
+    "method": [
+      "Add cottage cheese to a bowl.",
+      "Top with berries, honey and almonds.",
+      "Enjoy!"
+    ],
+    "notes": [
+      "High protein and refreshing.",
+      "Swap berries for banana or apple.",
+      "Add cinnamon if you like!"
+    ],
+    "tags": [
+      "Under 15 Minutes",
+      "High Protein"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": false
+  },
+  {
+    "id": "D01",
+    "category": "dinner",
+    "title": "Lemon Garlic Chicken & Rice",
+    "calories": 730,
+    "protein": 46,
+    "carbs": 72,
+    "fat": 20,
+    "fiber": 7,
+    "servings": "1",
+    "prep_time": "30 min",
+    "total_time": "35 min",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "lemon_chicken_rice.png",
+    "ingredients": [
+      "150 g chicken breast",
+      "60 g dry rice",
+      "150 g broccoli",
+      "1 tbsp olive oil",
+      "2 garlic cloves",
+      "Juice of 1/2 lemon",
+      "Salt, pepper, herbs"
+    ],
+    "method": [
+      "Cook rice according to package directions.",
+      "Season chicken with salt, pepper and herbs. Cook in olive oil until golden and cooked through.",
+      "Saut\u00e9 garlic, add broccoli and cook until tender.",
+      "Add lemon juice, toss everything together and serve."
+    ],
+    "notes": [
+      "Meal prep friendly.",
+      "Store in the fridge up to 3 days.",
+      "Swap chicken for salmon or tofu."
+    ],
+    "tags": [
+      "Meal Prep",
+      "Leftover Friendly",
+      "High Protein"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "T01",
+    "category": "treat",
+    "title": "Berry Cheesecake Cup",
+    "calories": 225,
+    "protein": 12,
+    "carbs": 29,
+    "fat": 8,
+    "fiber": 4,
+    "servings": "1",
+    "prep_time": "8 min",
+    "total_time": "8 min",
+    "difficulty": 1,
+    "dishes": 1,
+    "image": "cottage_cheese_berries.png",
+    "ingredients": [
+      "150 g vanilla skyr",
+      "80 g mixed berries",
+      "15 g crushed biscuits",
+      "1 tsp honey"
+    ],
+    "method": [
+      "Spoon the skyr into a small glass or bowl.",
+      "Add berries and crushed biscuits.",
+      "Drizzle with honey and serve."
+    ],
+    "notes": [
+      "A sweet treat that still has some protein.",
+      "Use any berries you like."
+    ],
+    "tags": [
+      "Sweet Treat",
+      "Under 15 Minutes"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": false
+  },
+  {
+    "id": "B02",
+    "category": "breakfast",
+    "title": "Overnight Oats with Peanut Butter",
+    "calories": 420,
+    "protein": 22,
+    "carbs": 48,
+    "fat": 14,
+    "fiber": 9,
+    "servings": "1",
+    "prep_time": "5 min",
+    "total_time": "5 min (+overnight)",
+    "difficulty": 1,
+    "dishes": 1,
+    "image": "overnight_oats_pb.png",
+    "ingredients": [
+      "50 g rolled oats",
+      "200 ml milk (or milk alternative)",
+      "1 tbsp peanut butter",
+      "1 tbsp chia seeds",
+      "1/2 tsp cinnamon",
+      "1/2 banana"
+    ],
+    "method": [
+      "sliced"
+    ],
+    "notes": [
+      "Combine oats, milk, chia seeds and cinnamon in a jar.",
+      "Stir in the peanut butter.",
+      "Cover and refrigerate overnight.",
+      "Top with sliced banana before eating."
+    ],
+    "tags": [
+      "Prep 3-4 jars at once for the week.",
+      "Swap peanut butter for any nut butter.",
+      "Add a scoop of protein powder if you like."
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "S02",
+    "category": "snack",
+    "title": "Hummus & Veggie Sticks",
+    "calories": 185,
+    "protein": 7,
+    "carbs": 20,
+    "fat": 9,
+    "fiber": 6,
+    "servings": "1",
+    "prep_time": "7 min",
+    "total_time": "7 min",
+    "difficulty": 1,
+    "dishes": 1,
+    "image": "hummus_veggie_sticks.png",
+    "ingredients": [
+      "80 g hummus",
+      "1 carrot"
+    ],
+    "method": [
+      "sliced into sticks",
+      "1/2 cucumber"
+    ],
+    "notes": [
+      "sliced into sticks",
+      "1/2 red bell pepper"
+    ],
+    "tags": [
+      "sliced",
+      "A pinch of paprika"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": false
+  },
+  {
+    "id": "D02",
+    "category": "dinner",
+    "title": "Turkey Chili",
+    "calories": 510,
+    "protein": 38,
+    "carbs": 45,
+    "fat": 16,
+    "fiber": 11,
+    "servings": "4",
+    "prep_time": "15 min",
+    "total_time": "40 min",
+    "difficulty": 2,
+    "dishes": 3,
+    "image": "turkey_chili.png",
+    "ingredients": [
+      "500 g ground turkey",
+      "1 onion, diced",
+      "2 garlic cloves, minced",
+      "400 g canned tomatoes",
+      "400 g kidney beans, drained",
+      "1 tbsp chili powder",
+      "1 tsp cumin",
+      "Salt and pepper"
+    ],
+    "method": [
+      "Brown the turkey in a large pot, breaking it up as it cooks.",
+      "Add onion and garlic, cook until soft.",
+      "Stir in tomatoes, beans, chili powder and cumin.",
+      "Simmer 25 minutes, stirring occasionally.",
+      "Season to taste and serve."
+    ],
+    "notes": [
+      "Freezes well in individual portions.",
+      "Great over rice or with cornbread.",
+      "Swap turkey for lean beef or lentils."
+    ],
+    "tags": [
+      "Meal Prep",
+      "High Protein",
+      "Leftover Friendly"
+    ],
+    "freezer_friendly": true,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "T02",
+    "category": "treat",
+    "title": "Dark Chocolate Protein Mug Cake",
+    "calories": 240,
+    "protein": 18,
+    "carbs": 26,
+    "fat": 9,
+    "fiber": 4,
+    "servings": "1",
+    "prep_time": "6 min",
+    "total_time": "6 min",
+    "difficulty": 1,
+    "dishes": 2,
+    "image": "choc_protein_mug_cake.png",
+    "ingredients": [
+      "1 scoop chocolate protein powder",
+      "2 tbsp cocoa powder",
+      "1 tbsp almond flour",
+      "1 egg",
+      "2 tbsp milk",
+      "1/2 tsp baking powder",
+      "A few dark chocolate chips"
+    ],
+    "method": [
+      "Whisk all ingredients together in a mug until smooth.",
+      "Microwave on high for 60-90 seconds.",
+      "Let cool slightly before eating.",
+      "Top with a few extra chocolate chips if you like."
+    ],
+    "notes": [
+      "Watch closely near the end so it doesn't overflow.",
+      "Great for a quick sweet fix with protein."
+    ],
+    "tags": [
+      "Sweet Treat",
+      "High Protein",
+      "Under 15 Minutes"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": false
+  }
+]
