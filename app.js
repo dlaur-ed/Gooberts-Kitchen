@@ -1,4 +1,4 @@
-const APP_VERSION = "2.0";
+const APP_VERSION = "2.1";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -446,20 +446,52 @@ function renderDetail(id) {
 }
 
 // ---------- Decide (Tinder-style swipe) ----------
-function shuffledDeck() {
-  const arr = RECIPES.slice();
+const DECIDE_CATEGORIES = ["breakfast", "snack", "dinner", "treat"];
+let decideCategory = "breakfast";
+let decideDeck = null;
+let decideIndex = 0;
+let decideDeckKey = null;
+
+function shuffledDeck(category) {
+  const arr = RECIPES.filter(r => r.category === category);
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
-let decideDeck = null;
-let decideIndex = 0;
+function ensureDecideDeck() {
+  const key = `${selectedDate}|${decideCategory}`;
+  if (decideDeckKey !== key) {
+    decideDeck = shuffledDeck(decideCategory);
+    decideIndex = 0;
+    decideDeckKey = key;
+  }
+}
+function categoryHasPlanned(cat) {
+  const ids = MEAL_PLAN[selectedDate] || [];
+  return ids.some(id => {
+    const r = findRecipeById(id);
+    return r && r.category === cat;
+  });
+}
+function decideCategoryChipsHTML() {
+  const chips = DECIDE_CATEGORIES.map(cat => `
+    <button class="filter-chip ${cat === decideCategory ? "active" : ""}" data-decide-cat="${cat}">
+      ${CATEGORY_LABELS[cat]}${categoryHasPlanned(cat) ? ' <span class="chosen-dot">✓</span>' : ""}
+    </button>`).join("");
+  return `<div class="filter-row">${chips}</div>`;
+}
 
-function attachSwipeHandlers(cardEl, onSwipeLeft, onSwipeRight) {
+function attachSwipeHandlers(cardEl, skipBtn, addBtn, onSwipeLeft, onSwipeRight) {
   let startX = 0, dx = 0, dragging = false;
 
+  function resetBtns() {
+    skipBtn.style.boxShadow = "";
+    skipBtn.style.transform = "";
+    addBtn.style.boxShadow = "";
+    addBtn.style.transform = "";
+  }
   function down(e) {
     dragging = true;
     startX = e.clientX;
@@ -470,11 +502,26 @@ function attachSwipeHandlers(cardEl, onSwipeLeft, onSwipeRight) {
     if (!dragging) return;
     dx = e.clientX - startX;
     cardEl.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+    const intensity = Math.min(Math.abs(dx) / 120, 1);
+    if (dx > 4) {
+      addBtn.style.transform = `scale(${1 + intensity * 0.25})`;
+      addBtn.style.boxShadow = `0 6px 20px rgba(217,111,145,${0.2 + intensity * 0.4})`;
+      skipBtn.style.transform = "";
+      skipBtn.style.boxShadow = "";
+    } else if (dx < -4) {
+      skipBtn.style.transform = `scale(${1 + intensity * 0.25})`;
+      skipBtn.style.boxShadow = `0 6px 20px rgba(58,47,43,${0.2 + intensity * 0.4})`;
+      addBtn.style.transform = "";
+      addBtn.style.boxShadow = "";
+    } else {
+      resetBtns();
+    }
   }
   function up() {
     if (!dragging) return;
     dragging = false;
     cardEl.style.transition = "transform 0.28s ease";
+    resetBtns();
     if (dx > 90) {
       cardEl.style.transform = `translateX(700px) rotate(24deg)`;
       setTimeout(onSwipeRight, 180);
@@ -493,13 +540,13 @@ function attachSwipeHandlers(cardEl, onSwipeLeft, onSwipeRight) {
 }
 
 function renderDecide() {
-  if (!decideDeck) { decideDeck = shuffledDeck(); decideIndex = 0; }
+  ensureDecideDeck();
   const r = decideDeck[decideIndex];
   const finished = !r;
 
   const stageHTML = finished
     ? `<div class="decide-empty">
-         <p>You've swiped through every recipe! 🎉</p>
+         <p>You've swiped through every ${CATEGORY_LABELS[decideCategory].toLowerCase()} recipe! 🎉</p>
          <button class="primary-btn" id="reshuffle-btn">Reshuffle deck</button>
        </div>`
     : `<div class="decide-card" id="decide-card">
@@ -522,20 +569,25 @@ function renderDecide() {
       <span class="version-badge">v${APP_VERSION}</span>
     </header>
     ${dateStripHTML()}
+    ${decideCategoryChipsHTML()}
     <div class="decide-stage">${stageHTML}</div>
     ${!finished ? `
     <div class="decide-actions">
       <button class="decide-btn skip" id="skip-btn" aria-label="Skip">✕</button>
+      <button class="decide-btn shuffle" id="shuffle-btn" aria-label="Reshuffle">🔀</button>
       <button class="decide-btn add" id="add-btn" aria-label="Add to plan">❤️</button>
     </div>` : ""}
     ${bottomNavHTML("decide")}
   `;
 
   attachDateStripHandlers(renderDecide);
+  app.querySelectorAll(".filter-chip[data-decide-cat]").forEach(btn => {
+    btn.addEventListener("click", () => { decideCategory = btn.dataset.decideCat; renderDecide(); });
+  });
 
   if (finished) {
     document.getElementById("reshuffle-btn").addEventListener("click", () => {
-      decideDeck = shuffledDeck(); decideIndex = 0; renderDecide();
+      decideDeck = shuffledDeck(decideCategory); decideIndex = 0; renderDecide();
     });
     return;
   }
@@ -545,8 +597,18 @@ function renderDecide() {
 
   document.getElementById("skip-btn").addEventListener("click", next);
   document.getElementById("add-btn").addEventListener("click", addAndNext);
-  attachSwipeHandlers(document.getElementById("decide-card"), next, addAndNext);
+  document.getElementById("shuffle-btn").addEventListener("click", () => {
+    decideDeck = shuffledDeck(decideCategory); decideIndex = 0; renderDecide();
+  });
+  attachSwipeHandlers(
+    document.getElementById("decide-card"),
+    document.getElementById("skip-btn"),
+    document.getElementById("add-btn"),
+    next,
+    addAndNext
+  );
 }
+
 
 // ---------- Plan (drag to build a day) ----------
 function attachDragToPlan(sourceEl, recipeId) {
@@ -615,6 +677,8 @@ function macroTallyRow(label, value, goal, unit) {
     </div>`;
 }
 
+let planCategory = "breakfast";
+
 function renderPlan() {
   const tally = tallyForDate(selectedDate);
   const ids = MEAL_PLAN[selectedDate] || [];
@@ -632,13 +696,20 @@ function renderPlan() {
         </div>`).join("")
     : `<p class="empty-state small">Drag a recipe up from below to add it here.</p>`;
 
-  const strip = RECIPES.map(r => `
-    <div class="strip-card" id="strip-${r.id}">
-      <div class="photo" style="background-image:url('assets/${r.image}')">
-        <span class="cat-tag">${CATEGORY_LABELS[r.category] || r.category}</span>
-      </div>
-      <p class="strip-title">${r.title}</p>
-    </div>`).join("");
+  const categoryChips = DECIDE_CATEGORIES.map(cat => `
+    <button class="filter-chip ${cat === planCategory ? "active" : ""}" data-plan-cat="${cat}">${CATEGORY_LABELS[cat]}</button>
+  `).join("");
+
+  const stripRecipes = RECIPES.filter(r => r.category === planCategory);
+  const strip = stripRecipes.length
+    ? stripRecipes.map(r => `
+        <div class="strip-card" id="strip-${r.id}">
+          <div class="photo" style="background-image:url('assets/${r.image}')">
+            <span class="cat-tag">${CATEGORY_LABELS[r.category] || r.category}</span>
+          </div>
+          <p class="strip-title">${r.title}</p>
+        </div>`).join("")
+    : `<p class="empty-state small">No ${CATEGORY_LABELS[planCategory].toLowerCase()} recipes yet.</p>`;
 
   app.innerHTML = `
     <header class="topbar">
@@ -650,7 +721,7 @@ function renderPlan() {
     <div class="section" style="padding:0 18px">
       <h2>Totals</h2>
       <div class="tally-card">
-        ${macroTallyRow("Cals", tally.calories, GOALS.calories, "")}
+        ${macroTallyRow("Cals", tally.calories, GOALS.calories, " kcal")}
         ${macroTallyRow("Protein", tally.protein, GOALS.protein, "g")}
         ${macroTallyRow("Carbs", tally.carbs, GOALS.carbs, "g")}
         ${macroTallyRow("Fat", tally.fat, GOALS.fat, "g")}
@@ -665,18 +736,22 @@ function renderPlan() {
 
     <div class="section">
       <h2 style="padding:0 18px">Drag from your library ↑</h2>
+      <div class="filter-row">${categoryChips}</div>
       <div class="strip-row">${strip}</div>
     </div>
     ${bottomNavHTML("plan")}
   `;
 
   attachDateStripHandlers(renderPlan);
+  app.querySelectorAll(".filter-chip[data-plan-cat]").forEach(btn => {
+    btn.addEventListener("click", () => { planCategory = btn.dataset.planCat; renderPlan(); });
+  });
 
   app.querySelectorAll(".plan-remove").forEach(btn => {
     btn.addEventListener("click", () => { removeFromPlan(selectedDate, btn.dataset.remove); renderPlan(); });
   });
 
-  RECIPES.forEach(r => {
+  stripRecipes.forEach(r => {
     const el = document.getElementById("strip-" + r.id);
     if (el) attachDragToPlan(el, r.id);
   });

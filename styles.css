@@ -27,7 +27,7 @@ body {
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 img { max-width: 100%; display: block; }
-button { font-family: inherit; }
+button { font-family: inherit; -webkit-appearance: none; appearance: none; }
 
 /* ---------- Top bar ---------- */
 .topbar {
@@ -180,7 +180,13 @@ button { font-family: inherit; }
   color: var(--treat);
   box-shadow: 0 2px 6px rgba(58,47,43,0.15);
   padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  line-height: 0;
+  flex-shrink: 0;
 }
+.heart-btn svg { display: block; pointer-events: none; }
 .heart-btn.active { background: var(--treat-wash); }
 .heart-btn.lg { width: 40px; height: 40px; }
 .hero-heart { position: absolute; top: 12px; right: 12px; }
@@ -402,8 +408,11 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
   font-size: 22px;
   box-shadow: 0 6px 16px rgba(58,47,43,0.16);
   background: white;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 .decide-btn.skip { color: var(--ink-soft); }
+.decide-btn.shuffle { width: 46px; height: 46px; font-size: 17px; align-self: center; opacity: 0.85; }
+.chosen-dot { color: var(--snack); font-weight: 900; }
 .decide-empty { text-align: center; padding: 60px 20px; color: var(--ink-soft); }
 .primary-btn {
   background: var(--ink);
@@ -429,7 +438,7 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 .tally-track { flex: 1; height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
 .tally-fill { height: 100%; background: var(--snack); border-radius: 999px; }
 .tally-fill.over { background: var(--treat); }
-.tally-val { font-size: 11px; font-weight: 700; color: var(--ink-soft); width: 92px; text-align: right; }
+.tally-val { font-size: 11px; font-weight: 700; color: var(--ink-soft); width: 104px; text-align: right; }
 .link-btn { background: none; border: none; color: var(--ink); font-size: 12px; font-weight: 700; text-decoration: underline; padding: 4px 0 0; }
 
 .plan-dropzone {
@@ -458,16 +467,24 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 .plan-remove { border: none; background: none; color: var(--ink-soft); font-size: 14px; padding: 4px 8px; }
 .empty-state.small { padding: 16px 8px; font-size: 13px; }
 
-.strip-row { display: flex; gap: 12px; padding: 4px 18px 10px; overflow-x: auto; scrollbar-width: none; }
+.strip-row {
+  display: flex;
+  gap: 10px;
+  padding: 4px 18px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
 .strip-row::-webkit-scrollbar { display: none; }
 .strip-card {
-  flex-shrink: 0;
-  width: 118px;
+  flex: 0 0 27%;
+  min-width: 96px;
   background: var(--card-bg);
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(58,47,43,0.08);
   touch-action: pan-x;
+  scroll-snap-align: start;
 }
 .strip-card .photo { aspect-ratio: 1 / 1; background-size: cover; background-position: center; position: relative; }
 .strip-card .cat-tag {
