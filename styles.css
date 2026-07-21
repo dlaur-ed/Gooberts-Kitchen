@@ -176,17 +176,23 @@ button { font-family: inherit; -webkit-appearance: none; appearance: none; }
   background: white;
   width: 28px; height: 28px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  position: relative;
   color: var(--treat);
   box-shadow: 0 2px 6px rgba(58,47,43,0.15);
   padding: 0;
   margin: 0;
   -webkit-appearance: none;
   appearance: none;
-  line-height: 0;
   flex-shrink: 0;
 }
-.heart-btn svg { display: block; pointer-events: none; }
+.heart-btn svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  display: block;
+}
 .heart-btn.active { background: var(--treat-wash); }
 .heart-btn.lg { width: 40px; height: 40px; }
 .hero-heart { position: absolute; top: 12px; right: 12px; }
@@ -397,6 +403,21 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
   padding: 6px 12px; border-radius: 999px; color: white;
   background: var(--ink);
 }
+.stamp {
+  position: absolute;
+  top: 16px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 3px solid;
+  opacity: 0;
+  transition: opacity 0.05s linear;
+  pointer-events: none;
+}
+.stamp-like { left: 14px; color: var(--snack); border-color: var(--snack); transform: rotate(-18deg); }
+.stamp-skip { right: 14px; color: var(--treat); border-color: var(--treat); transform: rotate(18deg); }
 .decide-info { padding: 16px; }
 .decide-info h2 { margin: 0 0 8px; font-size: 19px; }
 .decide-macros { display: flex; gap: 14px; font-size: 13px; color: var(--ink-soft); font-weight: 700; flex-wrap: wrap; }
@@ -506,15 +527,40 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 
 /* ---------- Goals form ---------- */
 .goals-form { display: flex; flex-direction: column; gap: 14px; }
-.goals-form label { font-size: 13px; font-weight: 700; color: var(--ink-soft); display: flex; flex-direction: column; gap: 6px; }
-.goals-form input {
-  border: none;
+.goal-field {
   background: var(--card-bg);
-  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px 14px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
+}
+.goal-input-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.goal-input-label input[type="number"] {
+  border: none;
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 10px 12px;
   font-size: 15px;
   font-weight: 700;
   color: var(--ink);
   font-family: inherit;
+}
+.goal-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.goal-toggle input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--ink);
 }

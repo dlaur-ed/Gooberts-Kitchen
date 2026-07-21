@@ -1,4 +1,4 @@
-const APP_VERSION = "2.1";
+const APP_VERSION = "2.2";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -158,18 +158,37 @@ function tallyForDate(date) {
     acc.protein += (typeof r.protein === "number" ? r.protein : 0);
     acc.carbs += (typeof r.carbs === "number" ? r.carbs : 0);
     acc.fat += (typeof r.fat === "number" ? r.fat : 0);
+    acc.fiber += (typeof r.fiber === "number" && !Number.isNaN(r.fiber) ? r.fiber : 0);
     return acc;
-  }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }, { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
 }
 
 // ---------- Macro goals ----------
-const DEFAULT_GOALS = { calories: 2000, protein: 120, carbs: 200, fat: 65 };
+const DEFAULT_GOALS = { calories: 2000, protein: 120, carbs: 200, fat: 65, fiber: 28 };
 function loadGoals() {
   try { return { ...DEFAULT_GOALS, ...JSON.parse(localStorage.getItem(GOALS_KEY) || "{}") }; }
   catch { return { ...DEFAULT_GOALS }; }
 }
 function saveGoals(g) { localStorage.setItem(GOALS_KEY, JSON.stringify(g)); }
 let GOALS = loadGoals();
+
+// ---------- Which macros to show in Plan totals ----------
+const TALLY_TOGGLES_KEY = "goobert-tally-toggles";
+const DEFAULT_TALLY_TOGGLES = { calories: true, protein: true, carbs: true, fat: true, fiber: true };
+function loadTallyToggles() {
+  try { return { ...DEFAULT_TALLY_TOGGLES, ...JSON.parse(localStorage.getItem(TALLY_TOGGLES_KEY) || "{}") }; }
+  catch { return { ...DEFAULT_TALLY_TOGGLES }; }
+}
+function saveTallyToggles(t) { localStorage.setItem(TALLY_TOGGLES_KEY, JSON.stringify(t)); }
+let TALLY_TOGGLES = loadTallyToggles();
+
+const GOAL_FIELDS = [
+  { key: "calories", label: "Calories", unit: " kcal" },
+  { key: "protein", label: "Protein (g)", unit: "g" },
+  { key: "carbs", label: "Carbs (g)", unit: "g" },
+  { key: "fat", label: "Fat (g)", unit: "g" },
+  { key: "fiber", label: "Fiber (g)", unit: "g" },
+];
 
 // ---------- Dates ----------
 function todayISO() {
@@ -483,7 +502,7 @@ function decideCategoryChipsHTML() {
   return `<div class="filter-row">${chips}</div>`;
 }
 
-function attachSwipeHandlers(cardEl, skipBtn, addBtn, onSwipeLeft, onSwipeRight) {
+function attachSwipeHandlers(cardEl, skipBtn, addBtn, likeStamp, skipStamp, onSwipeLeft, onSwipeRight) {
   let startX = 0, dx = 0, dragging = false;
 
   function resetBtns() {
@@ -491,6 +510,8 @@ function attachSwipeHandlers(cardEl, skipBtn, addBtn, onSwipeLeft, onSwipeRight)
     skipBtn.style.transform = "";
     addBtn.style.boxShadow = "";
     addBtn.style.transform = "";
+    likeStamp.style.opacity = "0";
+    skipStamp.style.opacity = "0";
   }
   function down(e) {
     dragging = true;
@@ -508,11 +529,15 @@ function attachSwipeHandlers(cardEl, skipBtn, addBtn, onSwipeLeft, onSwipeRight)
       addBtn.style.boxShadow = `0 6px 20px rgba(217,111,145,${0.2 + intensity * 0.4})`;
       skipBtn.style.transform = "";
       skipBtn.style.boxShadow = "";
+      likeStamp.style.opacity = String(intensity);
+      skipStamp.style.opacity = "0";
     } else if (dx < -4) {
       skipBtn.style.transform = `scale(${1 + intensity * 0.25})`;
       skipBtn.style.boxShadow = `0 6px 20px rgba(58,47,43,${0.2 + intensity * 0.4})`;
       addBtn.style.transform = "";
       addBtn.style.boxShadow = "";
+      skipStamp.style.opacity = String(intensity);
+      likeStamp.style.opacity = "0";
     } else {
       resetBtns();
     }
@@ -551,7 +576,8 @@ function renderDecide() {
        </div>`
     : `<div class="decide-card" id="decide-card">
          <div class="decide-photo" style="background-image:url('assets/${r.image}')">
-           <span class="cat-tag">${CATEGORY_LABELS[r.category] || r.category}</span>
+           <span class="stamp stamp-like" id="stamp-like">LIKE</span>
+           <span class="stamp stamp-skip" id="stamp-skip">SKIP</span>
          </div>
          <div class="decide-info">
            <h2>${r.title}</h2>
@@ -604,6 +630,8 @@ function renderDecide() {
     document.getElementById("decide-card"),
     document.getElementById("skip-btn"),
     document.getElementById("add-btn"),
+    document.getElementById("stamp-like"),
+    document.getElementById("stamp-skip"),
     next,
     addAndNext
   );
@@ -698,9 +726,12 @@ function renderPlan() {
 
   const categoryChips = DECIDE_CATEGORIES.map(cat => `
     <button class="filter-chip ${cat === planCategory ? "active" : ""}" data-plan-cat="${cat}">${CATEGORY_LABELS[cat]}</button>
-  `).join("");
+  `).join("") + `<button class="filter-chip ${planCategory === "favourites" ? "active" : ""}" data-plan-cat="favourites">♥ Favourites</button>`;
 
-  const stripRecipes = RECIPES.filter(r => r.category === planCategory);
+  const stripRecipes = planCategory === "favourites"
+    ? RECIPES.filter(r => FAVOURITES.has(r.id))
+    : RECIPES.filter(r => r.category === planCategory);
+  const emptyStripLabel = planCategory === "favourites" ? "favourite" : CATEGORY_LABELS[planCategory].toLowerCase();
   const strip = stripRecipes.length
     ? stripRecipes.map(r => `
         <div class="strip-card" id="strip-${r.id}">
@@ -709,7 +740,7 @@ function renderPlan() {
           </div>
           <p class="strip-title">${r.title}</p>
         </div>`).join("")
-    : `<p class="empty-state small">No ${CATEGORY_LABELS[planCategory].toLowerCase()} recipes yet.</p>`;
+    : `<p class="empty-state small">No ${emptyStripLabel} recipes yet.</p>`;
 
   app.innerHTML = `
     <header class="topbar">
@@ -721,10 +752,12 @@ function renderPlan() {
     <div class="section" style="padding:0 18px">
       <h2>Totals</h2>
       <div class="tally-card">
-        ${macroTallyRow("Cals", tally.calories, GOALS.calories, " kcal")}
-        ${macroTallyRow("Protein", tally.protein, GOALS.protein, "g")}
-        ${macroTallyRow("Carbs", tally.carbs, GOALS.carbs, "g")}
-        ${macroTallyRow("Fat", tally.fat, GOALS.fat, "g")}
+        ${TALLY_TOGGLES.calories ? macroTallyRow("Cals", tally.calories, GOALS.calories, " kcal") : ""}
+        ${TALLY_TOGGLES.protein ? macroTallyRow("Protein", tally.protein, GOALS.protein, "g") : ""}
+        ${TALLY_TOGGLES.carbs ? macroTallyRow("Carbs", tally.carbs, GOALS.carbs, "g") : ""}
+        ${TALLY_TOGGLES.fat ? macroTallyRow("Fat", tally.fat, GOALS.fat, "g") : ""}
+        ${TALLY_TOGGLES.fiber ? macroTallyRow("Fiber", tally.fiber, GOALS.fiber, "g") : ""}
+        ${Object.values(TALLY_TOGGLES).every(v => !v) ? `<p class="empty-state small">No macros selected. Turn some back on in your goals.</p>` : ""}
       </div>
       <button class="link-btn" onclick="location.hash='#/goals'">Edit my daily goals →</button>
     </div>
@@ -759,6 +792,18 @@ function renderPlan() {
 
 // ---------- Goals ----------
 function renderGoals() {
+  const fieldsHTML = GOAL_FIELDS.map(f => `
+    <div class="goal-field">
+      <label class="goal-input-label">
+        ${f.label}
+        <input type="number" id="goal-${f.key}" value="${GOALS[f.key]}" inputmode="numeric">
+      </label>
+      <label class="goal-toggle">
+        <input type="checkbox" id="toggle-${f.key}" ${TALLY_TOGGLES[f.key] ? "checked" : ""}>
+        Show in Plan totals
+      </label>
+    </div>`).join("");
+
   app.innerHTML = `
     <header class="topbar">
       <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
@@ -767,24 +812,23 @@ function renderGoals() {
     <div class="detail">
       <p style="color:var(--ink-soft);font-size:13px;margin-top:0">
         Set your daily targets — the Plan tab uses these to show how each day is tracking.
+        Uncheck anything you don't want cluttering up the totals.
       </p>
-      <div class="goals-form">
-        <label>Calories<input type="number" id="goal-calories" value="${GOALS.calories}" inputmode="numeric"></label>
-        <label>Protein (g)<input type="number" id="goal-protein" value="${GOALS.protein}" inputmode="numeric"></label>
-        <label>Carbs (g)<input type="number" id="goal-carbs" value="${GOALS.carbs}" inputmode="numeric"></label>
-        <label>Fat (g)<input type="number" id="goal-fat" value="${GOALS.fat}" inputmode="numeric"></label>
-      </div>
+      <div class="goals-form">${fieldsHTML}</div>
       <button class="primary-btn" id="save-goals-btn" style="margin-top:18px;width:100%">Save Goals</button>
     </div>
   `;
   document.getElementById("save-goals-btn").addEventListener("click", () => {
-    GOALS = {
-      calories: Number(document.getElementById("goal-calories").value) || 0,
-      protein: Number(document.getElementById("goal-protein").value) || 0,
-      carbs: Number(document.getElementById("goal-carbs").value) || 0,
-      fat: Number(document.getElementById("goal-fat").value) || 0,
-    };
+    const newGoals = {};
+    const newToggles = {};
+    GOAL_FIELDS.forEach(f => {
+      newGoals[f.key] = Number(document.getElementById(`goal-${f.key}`).value) || 0;
+      newToggles[f.key] = document.getElementById(`toggle-${f.key}`).checked;
+    });
+    GOALS = newGoals;
+    TALLY_TOGGLES = newToggles;
     saveGoals(GOALS);
+    saveTallyToggles(TALLY_TOGGLES);
     history.back();
   });
 }
