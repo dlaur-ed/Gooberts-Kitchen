@@ -1,4 +1,4 @@
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.3";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -17,6 +17,85 @@ const SORT_OPTIONS = [
 ];
 
 const FAV_KEY = "goobert-favourites";
+
+// ---------- Easter eggs ----------
+// Add more by giving a new keyword an array of joke "recipes" in the same
+// shape as real recipes. Triggered when the search box matches the keyword.
+const EASTER_EGGS = {
+  uranium: [
+    {
+      id: "EGG-U1",
+      category: "treat",
+      title: "Uranium-Infused Power Bowl",
+      calories: 1000000000,
+      protein: 999999999,
+      carbs: 0,
+      fat: -9999,
+      fiber: NaN,
+      servings: "1 (if you survive)",
+      prep_time: "4.5 billion years",
+      image: "uranium_bowl.png",
+      ingredients: [
+        "1 rod enriched uranium-235",
+        "A pinch of existential dread",
+        "2 tbsp forbidden glow",
+        "1 lead-lined spoon (do not skip)",
+      ],
+      method: [
+        "Do not attempt.",
+        "Seriously, put it down.",
+        "This is a joke recipe. Please eat an actual snack.",
+        "Baby Goobert is very concerned about you right now.",
+      ],
+      notes: [
+        "This recipe is fictional and radioactive-themed for fun only.",
+        "Half-life: longer than this app will ever be maintained.",
+      ],
+      tags: ["⚠️ Do Not Eat", "Nuclear-Grade", "Not FDA Approved"],
+      freezer_friendly: false,
+      meal_prep_friendly: false,
+      isEasterEgg: true,
+    },
+    {
+      id: "EGG-U2",
+      category: "dinner",
+      title: "Chernobyl-Style Casserole",
+      calories: 999999999,
+      protein: 500000,
+      carbs: 88888,
+      fat: 12000,
+      fiber: 3,
+      servings: "Serves a small city",
+      prep_time: "Do not attempt",
+      image: "uranium_bowl.png",
+      ingredients: [
+        "1 reactor core, lightly seasoned",
+        "3 cups regret",
+        "A dash of gamma rays",
+      ],
+      method: [
+        "Evacuate the kitchen.",
+        "Call literally anyone else.",
+        "This is not a real recipe.",
+      ],
+      notes: ["You found an easter egg! 🐢☢️"],
+      tags: ["⚠️ Do Not Eat", "Glows in the Dark"],
+      freezer_friendly: false,
+      meal_prep_friendly: false,
+      isEasterEgg: true,
+    },
+  ],
+};
+
+function matchedEasterEgg(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  return EASTER_EGGS[q] || null;
+}
+
+function allEasterEggRecipes() {
+  return Object.values(EASTER_EGGS).flat();
+}
 
 const app = document.getElementById("app");
 let RECIPES = [];
@@ -58,10 +137,13 @@ function parseMinutes(str) {
 }
 
 function macroCell(icon, value, unit, label) {
+  let display = value;
+  if (Number.isNaN(value)) display = "∞";
+  else if (typeof value === "number") display = value.toLocaleString();
   return `
     <div class="macro-cell">
       <span class="icon">${icon}</span>
-      <span class="val">${value}${unit}</span>
+      <span class="val">${display}${unit}</span>
       <span class="lbl">${label}</span>
     </div>`;
 }
@@ -79,14 +161,14 @@ function heartButton(id, size = "sm") {
 
 function recipeCardHTML(r) {
   return `
-    <div class="recipe-card" data-category="${r.category}">
+    <div class="recipe-card ${r.isEasterEgg ? "egg-card" : ""}" data-category="${r.category}">
       <button class="card-tap" onclick="location.hash='#/recipe/${r.id}'">
         <div class="photo" style="background-image:url('assets/${r.image}')">
-          <span class="cat-tag">${CATEGORY_LABELS[r.category] || r.category}</span>
+          <span class="cat-tag" ${r.isEasterEgg ? 'style="background:#5c7a1e"' : ""}>${r.isEasterEgg ? "☢️ Classified" : (CATEGORY_LABELS[r.category] || r.category)}</span>
         </div>
         <div class="info">
           <p class="title">${r.title}</p>
-          <p class="cal">${r.calories} kcal · ${r.prep_time}</p>
+          <p class="cal">${typeof r.calories === "number" ? r.calories.toLocaleString() : r.calories} kcal · ${r.prep_time}</p>
         </div>
       </button>
       <div class="card-heart">${heartButton(r.id)}</div>
@@ -94,6 +176,9 @@ function recipeCardHTML(r) {
 }
 
 function applyFilters() {
+  const egg = matchedEasterEgg(searchQuery);
+  if (egg) return egg;
+
   let list = RECIPES.slice();
 
   if (activeCategory !== "all") list = list.filter(r => r.category === activeCategory);
@@ -139,6 +224,11 @@ function renderLibrary() {
     `<option value="${o.value}" ${o.value === sortBy ? "selected" : ""}>${o.label}</option>`
   ).join("");
 
+  const egg = matchedEasterEgg(searchQuery);
+  const eggBanner = egg
+    ? `<p class="egg-banner">☢️ Uh oh. You found something you shouldn't have.</p>`
+    : "";
+
   const cards = filtered.length
     ? filtered.map(recipeCardHTML).join("")
     : `<p class="empty-state" style="grid-column:1/-1">No recipes match. Try clearing a filter.</p>`;
@@ -157,6 +247,7 @@ function renderLibrary() {
     <div class="sort-row">
       <select id="sort-select">${sortSelectOptions}</select>
     </div>
+    ${eggBanner}
     <div class="grid">${cards}</div>
     <footer class="tag-line">🐢 ${RECIPES.length} recipes and counting</footer>
   `;
@@ -188,7 +279,7 @@ function renderLibrary() {
 }
 
 function renderDetail(id) {
-  const r = RECIPES.find(x => x.id === id);
+  const r = RECIPES.find(x => x.id === id) || allEasterEggRecipes().find(x => x.id === id);
   if (!r) {
     app.innerHTML = `<p class="empty-state">Recipe not found. <a href="#/">Go back</a></p>`;
     return;
@@ -218,8 +309,8 @@ function renderDetail(id) {
       <div class="wordmark">${CATEGORY_LABELS[r.category] || r.category}</div>
     </header>
     <div class="detail">
-      <div class="detail-hero" style="background-image:url('assets/${r.image}')">
-        <span class="cat-tag" style="background:var(--${r.category})">${CATEGORY_LABELS[r.category] || r.category}</span>
+      <div class="detail-hero ${r.isEasterEgg ? "egg-card" : ""}" style="background-image:url('assets/${r.image}')">
+        <span class="cat-tag" ${r.isEasterEgg ? 'style="background:#5c7a1e"' : `style="background:var(--${r.category})"`}>${r.isEasterEgg ? "☢️ Classified" : (CATEGORY_LABELS[r.category] || r.category)}</span>
         <div class="hero-heart">${heartButton(r.id, "lg")}</div>
       </div>
       <h1>${r.title}</h1>

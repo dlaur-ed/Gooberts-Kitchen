@@ -298,3 +298,21 @@ button { font-family: inherit; }
 .feature-chip { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--cream); color: var(--ink-soft); }
 
 footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); padding: 20px 0 6px; }
+
+/* ---------- Easter eggs ---------- */
+.egg-banner {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5c7a1e;
+  background: #eef7d8;
+  margin: 0 18px 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+@keyframes egg-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(198,255,60,0.0), 0 4px 14px rgba(58,47,43,0.08); }
+  50% { box-shadow: 0 0 18px rgba(198,255,60,0.55), 0 4px 14px rgba(58,47,43,0.08); }
+}
+.recipe-card.egg-card { animation: egg-glow 2.2s ease-in-out infinite; }
+.detail-hero.egg-card { animation: egg-glow 2.2s ease-in-out infinite; }

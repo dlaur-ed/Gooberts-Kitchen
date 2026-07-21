@@ -1,4 +1,4 @@
-const CACHE_NAME = "goobert-kitchen-app-v3";
+const CACHE_NAME = "goobert-kitchen-app-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -18,7 +18,8 @@ const APP_SHELL = [
   "./assets/overnight_oats_pb.png",
   "./assets/hummus_veggie_sticks.png",
   "./assets/turkey_chili.png",
-  "./assets/choc_protein_mug_cake.png"
+  "./assets/choc_protein_mug_cake.png",
+  "./assets/uranium_bowl.png"
 ];
 
 self.addEventListener("install", (event) => {
