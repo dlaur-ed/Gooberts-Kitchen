@@ -52,6 +52,7 @@ button { font-family: inherit; -webkit-appearance: none; appearance: none; }
 .topbar .back-btn svg { display: block; }
 .wordmark { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; flex: 1; }
 .wordmark small { display: block; font-size: 11px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.03em; }
+.header-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .version-badge {
   font-size: 10px;
   font-weight: 800;
@@ -60,8 +61,15 @@ button { font-family: inherit; -webkit-appearance: none; appearance: none; }
   padding: 3px 8px;
   border-radius: 999px;
   letter-spacing: 0.02em;
-  align-self: flex-start;
-  margin-top: 2px;
+}
+.streak-badge {
+  border: none;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--breakfast);
+  background: var(--breakfast-wash);
+  padding: 5px 10px;
+  border-radius: 999px;
 }
 
 /* ---------- Search ---------- */
@@ -564,3 +572,97 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
   width: 16px; height: 16px;
   accent-color: var(--ink);
 }
+
+/* ---------- Cheat tokens ---------- */
+.cheat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--treat-wash);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin: 0 18px 14px;
+}
+.cheat-tokens { font-size: 12px; font-weight: 800; color: #99445f; }
+.cheat-btn {
+  border: none;
+  background: var(--treat);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.cheat-btn.used { background: white; color: #99445f; border: 2px solid var(--treat); }
+.cheat-covered { font-size: 11px; font-weight: 800; color: var(--snack); flex-shrink: 0; }
+
+/* ---------- Cook checkbox ---------- */
+.cook-check {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: white;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cook-check.checked {
+  background: var(--snack);
+  border-color: var(--snack);
+  animation: cook-pop 0.3s ease;
+}
+@keyframes cook-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Stats screen ---------- */
+.stats-hero {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.stats-hero-item {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 14px 6px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(58,47,43,0.06);
+}
+.stats-num { display: block; font-size: 19px; font-weight: 800; }
+.stats-label { display: block; font-size: 9px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 4px; }
+.stats-total { font-size: 32px; font-weight: 800; margin: 0; }
+.cat-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.cat-breakdown-row:last-child { border-bottom: none; }
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
+}
+.stat-row:last-child { margin-bottom: 0; }
+.stat-rank { font-size: 12px; font-weight: 800; color: var(--ink-soft); width: 22px; text-align: center; flex-shrink: 0; }
+.stat-thumb { width: 40px; height: 40px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; }
+.stat-row-info { flex: 1; min-width: 0; }
+.stat-row-title { margin: 0; font-size: 13px; font-weight: 700; }
+.stat-row-sub { margin: 0; font-size: 11px; color: var(--ink-soft); }

@@ -1,4 +1,4 @@
-const APP_VERSION = "2.2";
+const APP_VERSION = "2.4";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -19,6 +19,9 @@ const SORT_OPTIONS = [
 const FAV_KEY = "goobert-favourites";
 const PLAN_KEY = "goobert-meal-plan";
 const GOALS_KEY = "goobert-macro-goals";
+const COOK_LOG_KEY = "goobert-cook-log";
+const PROTECTED_DAYS_KEY = "goobert-protected-days";
+const STATS_META_KEY = "goobert-stats-meta";
 
 const BACK_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#3A2F2B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -190,6 +193,113 @@ const GOAL_FIELDS = [
   { key: "fiber", label: "Fiber (g)", unit: "g" },
 ];
 
+// ---------- Cook log (what's actually been made) ----------
+function loadCookLog() {
+  try { return JSON.parse(localStorage.getItem(COOK_LOG_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveCookLog(log) { localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log)); }
+let COOK_LOG = loadCookLog();
+
+function loadProtectedDays() {
+  try { return JSON.parse(localStorage.getItem(PROTECTED_DAYS_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveProtectedDays(days) { localStorage.setItem(PROTECTED_DAYS_KEY, JSON.stringify(days)); }
+let PROTECTED_DAYS = loadProtectedDays();
+
+function loadStatsMeta() {
+  // TEST MODE: seeding 100 bonus cheat-day tokens so there's plenty to play
+  // with while testing. Set testModeBonusTokens to 0 before a real launch.
+  const defaults = { testModeBonusTokens: 100, milestonesAwarded: 0, longestStreak: 0 };
+  try { return { ...defaults, ...JSON.parse(localStorage.getItem(STATS_META_KEY) || "{}") }; }
+  catch { return defaults; }
+}
+function saveStatsMeta(m) { localStorage.setItem(STATS_META_KEY, JSON.stringify(m)); }
+let STATS_META = loadStatsMeta();
+
+function isCooked(date, recipeId) {
+  return COOK_LOG.some(e => e.date === date && e.recipeId === recipeId);
+}
+function toggleCooked(date, recipeId, category) {
+  if (isCooked(date, recipeId)) {
+    COOK_LOG = COOK_LOG.filter(e => !(e.date === date && e.recipeId === recipeId));
+  } else {
+    COOK_LOG.push({ date, recipeId, category, timestamp: Date.now() });
+  }
+  saveCookLog(COOK_LOG);
+  refreshStreakAndTokens();
+}
+function isDayLogged(dateISO) {
+  return COOK_LOG.some(e => e.date === dateISO) || PROTECTED_DAYS.includes(dateISO);
+}
+function computeCurrentStreak() {
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  let iso = cursor.toISOString().slice(0, 10);
+  // if today hasn't been logged yet, don't let that alone break an existing streak —
+  // start counting from yesterday instead
+  if (!isDayLogged(iso)) cursor.setDate(cursor.getDate() - 1);
+  let streak = 0;
+  while (true) {
+    const ci = cursor.toISOString().slice(0, 10);
+    if (isDayLogged(ci)) { streak++; cursor.setDate(cursor.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+function refreshStreakAndTokens() {
+  const streak = computeCurrentStreak();
+  if (streak > STATS_META.longestStreak) STATS_META.longestStreak = streak;
+  const milestones = Math.floor(streak / 7);
+  if (milestones > STATS_META.milestonesAwarded) {
+    STATS_META.milestonesAwarded = milestones;
+  }
+  saveStatsMeta(STATS_META);
+  return streak;
+}
+// Tokens earned in total (test-mode bonus + streak milestones), independent
+// of whether any have been spent yet.
+function totalTokensEarned() {
+  return STATS_META.testModeBonusTokens + STATS_META.milestonesAwarded;
+}
+// Available balance = earned minus currently-protected days. Since the date
+// strip never shows past dates, every protected day you can still see and
+// toggle is, by definition, today-or-future — meaning a spend only becomes
+// truly permanent once its calendar day passes out of view. That gives us
+// "reversible until end of day" for free, with no extra locking logic needed.
+function availableCheatTokens() {
+  return Math.max(0, totalTokensEarned() - PROTECTED_DAYS.length);
+}
+function toggleCheatDay(date) {
+  if (PROTECTED_DAYS.includes(date)) {
+    PROTECTED_DAYS = PROTECTED_DAYS.filter(d => d !== date);
+  } else {
+    if (availableCheatTokens() <= 0) return false;
+    PROTECTED_DAYS.push(date);
+  }
+  saveProtectedDays(PROTECTED_DAYS);
+  refreshStreakAndTokens();
+  return true;
+}
+function mostCookedList(limit = 5) {
+  const counts = {};
+  COOK_LOG.forEach(e => { counts[e.recipeId] = (counts[e.recipeId] || 0) + 1; });
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([id, count]) => ({ recipe: findRecipeById(id), count }))
+    .filter(x => x.recipe);
+}
+function categoryBreakdown() {
+  const counts = { breakfast: 0, snack: 0, dinner: 0, treat: 0 };
+  COOK_LOG.forEach(e => { if (counts[e.category] !== undefined) counts[e.category]++; });
+  return counts;
+}
+function recentHistory(limit = 10) {
+  return COOK_LOG.slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
+}
+
 // ---------- Dates ----------
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -314,6 +424,7 @@ function applyFilters() {
 }
 
 function renderLibrary() {
+  const streak = refreshStreakAndTokens();
   const filtered = applyFilters();
 
   const categoryChips = ["all", "breakfast", "snack", "dinner", "treat"].map(cat => {
@@ -343,7 +454,10 @@ function renderLibrary() {
   app.innerHTML = `
     <header class="topbar">
       <div class="wordmark">Goobert's Kitchen<small>What are we eating?</small></div>
-      <span class="version-badge">v${APP_VERSION}</span>
+      <div class="header-badges">
+        <button class="streak-badge" onclick="location.hash='#/stats'" aria-label="View stats">🔥 ${streak}</button>
+        <span class="version-badge">v${APP_VERSION}</span>
+      </div>
     </header>
     <div class="search-row">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B5F58" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#6B5F58" stroke-width="2" stroke-linecap="round"/></svg>
@@ -708,20 +822,25 @@ function macroTallyRow(label, value, goal, unit) {
 let planCategory = "breakfast";
 
 function renderPlan() {
+  refreshStreakAndTokens();
   const tally = tallyForDate(selectedDate);
   const ids = MEAL_PLAN[selectedDate] || [];
   const planned = ids.map(findRecipeById).filter(Boolean);
 
   const plannedRows = planned.length
-    ? planned.map(r => `
+    ? planned.map(r => {
+        const cooked = isCooked(selectedDate, r.id);
+        return `
         <div class="plan-row">
+          <button class="cook-check ${cooked ? "checked" : ""}" data-cook="${r.id}" data-cook-cat="${r.category}" aria-label="Mark as made">${cooked ? "✓" : ""}</button>
           <div class="plan-thumb" style="background-image:url('assets/${r.image}')"></div>
           <div class="plan-row-info">
             <p class="plan-row-title">${r.title}</p>
             <p class="plan-row-sub">${r.calories} kcal</p>
           </div>
           <button class="plan-remove" data-remove="${r.id}" aria-label="Remove">✕</button>
-        </div>`).join("")
+        </div>`;
+      }).join("")
     : `<p class="empty-state small">Drag a recipe up from below to add it here.</p>`;
 
   const categoryChips = DECIDE_CATEGORIES.map(cat => `
@@ -742,12 +861,32 @@ function renderPlan() {
         </div>`).join("")
     : `<p class="empty-state small">No ${emptyStripLabel} recipes yet.</p>`;
 
+  const cookedOnSelected = COOK_LOG.some(e => e.date === selectedDate);
+  const cheatUsedOnSelected = PROTECTED_DAYS.includes(selectedDate);
+  const availTokens = availableCheatTokens();
+
+  let cheatAction = "";
+  if (cookedOnSelected) {
+    cheatAction = `<span class="cheat-covered">✓ Day covered</span>`;
+  } else if (cheatUsedOnSelected) {
+    cheatAction = `<button class="cheat-btn used" id="use-cheat-btn">✓ Cheat day used — tap to undo</button>`;
+  } else if (availTokens > 0) {
+    cheatAction = `<button class="cheat-btn" id="use-cheat-btn">Use one for this day</button>`;
+  }
+
+  const cheatRow = `
+    <div class="cheat-row">
+      <span class="cheat-tokens">🎟 ${availTokens} cheat day${availTokens === 1 ? "" : "s"} available</span>
+      ${cheatAction}
+    </div>`;
+
   app.innerHTML = `
     <header class="topbar">
       <div class="wordmark">Meal Plan<small>Drag recipes into your day</small></div>
       <span class="version-badge">v${APP_VERSION}</span>
     </header>
     ${dateStripHTML()}
+    ${cheatRow}
 
     <div class="section" style="padding:0 18px">
       <h2>Totals</h2>
@@ -783,6 +922,21 @@ function renderPlan() {
   app.querySelectorAll(".plan-remove").forEach(btn => {
     btn.addEventListener("click", () => { removeFromPlan(selectedDate, btn.dataset.remove); renderPlan(); });
   });
+
+  app.querySelectorAll(".cook-check").forEach(btn => {
+    btn.addEventListener("click", () => {
+      toggleCooked(selectedDate, btn.dataset.cook, btn.dataset.cookCat);
+      renderPlan();
+    });
+  });
+
+  const useCheatBtn = document.getElementById("use-cheat-btn");
+  if (useCheatBtn) {
+    useCheatBtn.addEventListener("click", () => {
+      toggleCheatDay(selectedDate);
+      renderPlan();
+    });
+  }
 
   stripRecipes.forEach(r => {
     const el = document.getElementById("strip-" + r.id);
@@ -833,6 +987,85 @@ function renderGoals() {
   });
 }
 
+// ---------- Stats ----------
+function renderStats() {
+  const streak = refreshStreakAndTokens();
+  const totalCooked = COOK_LOG.length;
+  const breakdown = categoryBreakdown();
+  const topList = mostCookedList(5);
+  const recent = recentHistory(10);
+
+  const topHTML = topList.length
+    ? topList.map((x, i) => `
+        <div class="stat-row">
+          <span class="stat-rank">#${i + 1}</span>
+          <div class="stat-thumb" style="background-image:url('assets/${x.recipe.image}')"></div>
+          <div class="stat-row-info">
+            <p class="stat-row-title">${x.recipe.title}</p>
+            <p class="stat-row-sub">${x.count}× cooked</p>
+          </div>
+        </div>`).join("")
+    : `<p class="empty-state small">Nothing cooked yet — check off a meal on the Plan tab to get started.</p>`;
+
+  const recentHTML = recent.map(e => {
+    const r = findRecipeById(e.recipeId);
+    if (!r) return "";
+    return `
+      <div class="stat-row">
+        <div class="stat-thumb" style="background-image:url('assets/${r.image}')"></div>
+        <div class="stat-row-info">
+          <p class="stat-row-title">${r.title}</p>
+          <p class="stat-row-sub">${e.date}</p>
+        </div>
+      </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <header class="topbar">
+      <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
+      <div class="wordmark">Your Stats</div>
+    </header>
+    <div class="detail">
+      <div class="stats-hero">
+        <div class="stats-hero-item">
+          <span class="stats-num">🔥 ${streak}</span>
+          <span class="stats-label">Current Streak</span>
+        </div>
+        <div class="stats-hero-item">
+          <span class="stats-num">${STATS_META.longestStreak}</span>
+          <span class="stats-label">Longest Streak</span>
+        </div>
+        <div class="stats-hero-item">
+          <span class="stats-num">🎟 ${availableCheatTokens()}</span>
+          <span class="stats-label">Cheat Days</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Total Meals Cooked</h2>
+        <p class="stats-total">${totalCooked}</p>
+      </div>
+
+      <div class="section">
+        <h2>By Category</h2>
+        <div class="tally-card">
+          <div class="cat-breakdown-row"><span>🌅 Breakfast</span><span>${breakdown.breakfast}</span></div>
+          <div class="cat-breakdown-row"><span>🥕 Snack</span><span>${breakdown.snack}</span></div>
+          <div class="cat-breakdown-row"><span>🍽 Dinner</span><span>${breakdown.dinner}</span></div>
+          <div class="cat-breakdown-row"><span>🎉 Treat</span><span>${breakdown.treat}</span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Most Cooked</h2>
+        ${topHTML}
+      </div>
+
+      ${recent.length ? `<div class="section"><h2>Recent History</h2>${recentHTML}</div>` : ""}
+    </div>
+  `;
+}
+
 function router() {
   const hash = location.hash || "#/";
   const recipeMatch = hash.match(/^#\/recipe\/(.+)$/);
@@ -840,6 +1073,7 @@ function router() {
   if (hash === "#/decide") { renderDecide(); return; }
   if (hash === "#/plan") { renderPlan(); return; }
   if (hash === "#/goals") { renderGoals(); return; }
+  if (hash === "#/stats") { renderStats(); return; }
   renderLibrary();
 }
 
