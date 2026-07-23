@@ -38,6 +38,10 @@
       "Early Morning Friendly",
       "Meal Prep"
     ],
+    "dietary_tags": [
+      "vegetarian",
+      "gluten-free"
+    ],
     "freezer_friendly": false,
     "meal_prep_friendly": true
   },
@@ -76,6 +80,10 @@
       "Under 15 Minutes",
       "High Protein"
     ],
+    "dietary_tags": [
+      "vegetarian",
+      "gluten-free"
+    ],
     "freezer_friendly": false,
     "meal_prep_friendly": false
   },
@@ -88,7 +96,7 @@
     "carbs": 72,
     "fat": 20,
     "fiber": 7,
-    "servings": "1",
+    "servings": "2",
     "prep_time": "30 min",
     "total_time": "35 min",
     "difficulty": 2,
@@ -118,6 +126,10 @@
       "Meal Prep",
       "Leftover Friendly",
       "High Protein"
+    ],
+    "dietary_tags": [
+      "dairy-free",
+      "gluten-free"
     ],
     "freezer_friendly": false,
     "meal_prep_friendly": true
@@ -156,6 +168,9 @@
       "Sweet Treat",
       "Under 15 Minutes"
     ],
+    "dietary_tags": [
+      "vegetarian"
+    ],
     "freezer_friendly": false,
     "meal_prep_friendly": false
   },
@@ -180,23 +195,28 @@
       "1 tbsp peanut butter",
       "1 tbsp chia seeds",
       "1/2 tsp cinnamon",
-      "1/2 banana"
+      "1/2 banana, sliced"
     ],
     "method": [
-      "sliced"
-    ],
-    "notes": [
       "Combine oats, milk, chia seeds and cinnamon in a jar.",
       "Stir in the peanut butter.",
       "Cover and refrigerate overnight.",
       "Top with sliced banana before eating."
     ],
-    "tags": [
+    "notes": [
       "Prep 3-4 jars at once for the week.",
       "Swap peanut butter for any nut butter.",
       "Add a scoop of protein powder if you like."
     ],
-    "freezer_friendly": false,
+    "tags": [
+      "Meal Prep",
+      "Make Ahead",
+      "Early Morning Friendly"
+    ],
+    "dietary_tags": [
+      "vegetarian"
+    ],
+    "freezer_friendly": true,
     "meal_prep_friendly": true
   },
   {
@@ -216,22 +236,33 @@
     "image": "hummus_veggie_sticks.png",
     "ingredients": [
       "80 g hummus",
-      "1 carrot"
-    ],
-    "method": [
-      "sliced into sticks",
-      "1/2 cucumber"
-    ],
-    "notes": [
-      "sliced into sticks",
-      "1/2 red bell pepper"
-    ],
-    "tags": [
-      "sliced",
+      "1 carrot, sliced into sticks",
+      "1/2 cucumber, sliced into sticks",
+      "1/2 red bell pepper, sliced",
       "A pinch of paprika"
     ],
+    "method": [
+      "Spoon hummus into a small bowl.",
+      "Sprinkle with paprika.",
+      "Arrange the veggie sticks around the bowl for dipping.",
+      "Enjoy!"
+    ],
+    "notes": [
+      "Great for prepping ahead in containers.",
+      "Swap in any crunchy veg you have on hand."
+    ],
+    "tags": [
+      "Under 15 Minutes",
+      "Meal Prep"
+    ],
+    "dietary_tags": [
+      "vegan",
+      "vegetarian",
+      "dairy-free",
+      "gluten-free"
+    ],
     "freezer_friendly": false,
-    "meal_prep_friendly": false
+    "meal_prep_friendly": true
   },
   {
     "id": "D02",
@@ -242,10 +273,10 @@
     "carbs": 45,
     "fat": 16,
     "fiber": 11,
-    "servings": "4",
+    "servings": "2",
     "prep_time": "15 min",
     "total_time": "40 min",
-    "difficulty": 2,
+    "difficulty": 4,
     "dishes": 3,
     "image": "turkey_chili.png",
     "ingredients": [
@@ -274,6 +305,10 @@
       "Meal Prep",
       "High Protein",
       "Leftover Friendly"
+    ],
+    "dietary_tags": [
+      "dairy-free",
+      "gluten-free"
     ],
     "freezer_friendly": true,
     "meal_prep_friendly": true
@@ -316,6 +351,10 @@
       "Sweet Treat",
       "High Protein",
       "Under 15 Minutes"
+    ],
+    "dietary_tags": [
+      "vegetarian",
+      "gluten-free"
     ],
     "freezer_friendly": false,
     "meal_prep_friendly": false
