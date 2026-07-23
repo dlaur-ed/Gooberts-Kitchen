@@ -438,6 +438,11 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
   box-shadow: 0 6px 16px rgba(58,47,43,0.16);
   background: white;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
 }
 .decide-btn.skip { color: var(--ink-soft); }
 .decide-btn.shuffle { width: 46px; height: 46px; font-size: 17px; align-self: center; opacity: 0.85; }
@@ -663,6 +668,197 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 .stat-row:last-child { margin-bottom: 0; }
 .stat-rank { font-size: 12px; font-weight: 800; color: var(--ink-soft); width: 22px; text-align: center; flex-shrink: 0; }
 .stat-thumb { width: 40px; height: 40px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; }
+.stat-thumb.emoji-thumb { display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--cream); }
 .stat-row-info { flex: 1; min-width: 0; }
 .stat-row-title { margin: 0; font-size: 13px; font-weight: 700; }
 .stat-row-sub { margin: 0; font-size: 11px; color: var(--ink-soft); }
+
+/* ---------- Shortcut cards (Stats screen) ---------- */
+.shortcut-row { display: flex; gap: 8px; }
+.shortcut-card {
+  flex: 1;
+  border: none;
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 4px 14px rgba(58,47,43,0.06);
+}
+.shortcut-icon { font-size: 20px; }
+.shortcut-label { font-size: 11px; font-weight: 800; }
+.shortcut-sub { font-size: 10px; font-weight: 700; color: var(--ink-soft); }
+
+/* ---------- Baby Goobert mascot widget (Library) ---------- */
+.goobert-corner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 18px 4px;
+  gap: 10px;
+}
+.goobert-mascot-wrap { position: relative; }
+.goobert-mascot-img {
+  width: 84px;
+  cursor: pointer;
+  animation: goobert-idle 3.4s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+.goobert-mascot-img.bounce { animation: goobert-idle 3.4s ease-in-out infinite, goobert-bounce 0.5s ease; }
+@keyframes goobert-idle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes goobert-bounce {
+  0% { transform: scale(1) rotate(0deg); }
+  35% { transform: scale(1.18) rotate(-6deg); }
+  60% { transform: scale(0.94) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.speech-bubble {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translate(-50%, -100%) scale(0.85);
+  background: white;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(58,47,43,0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.speech-bubble.show { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: white;
+}
+.snack-corner-btn {
+  border: none;
+  background: var(--breakfast-wash);
+  color: #9d6b00;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 9px 16px;
+  border-radius: 999px;
+}
+
+/* ---------- Goobert toast (floating reaction bubble, any screen) ---------- */
+.goobert-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translate(-50%, 12px);
+  background: var(--ink);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  opacity: 0;
+  z-index: 200;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.goobert-toast img { width: 26px; height: 26px; border-radius: 50%; background: white; }
+.goobert-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Snack Corner ---------- */
+.snack-remaining-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--breakfast-wash);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.snack-corner-mascot { width: 48px; flex-shrink: 0; }
+.snack-remaining-num { margin: 0; font-size: 18px; font-weight: 800; color: #9d6b00; }
+.snack-remaining-sub { margin: 0; font-size: 12px; font-weight: 700; color: #9d6b00; opacity: 0.8; }
+.snack-suggest-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
+}
+.snack-suggest-row:last-child { margin-bottom: 0; }
+.snack-eat-btn {
+  border: none;
+  background: var(--snack);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ---------- Shared add-form (snacks, rewards) ---------- */
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
+}
+.add-form input, .add-form select {
+  border: none;
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: inherit;
+}
+.form-grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+/* ---------- Achievements ---------- */
+.achievement-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
+  opacity: 0.55;
+}
+.achievement-row.unlocked { opacity: 1; }
+.achievement-icon { font-size: 24px; width: 32px; text-align: center; flex-shrink: 0; }
+
+/* ---------- Real-Life Rewards ---------- */
+.reward-row {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.06);
+}
+.reward-row.unlocked { background: var(--snack-wash); }
+.reward-row-top { display: flex; justify-content: space-between; align-items: center; }
+.tally-fill.reward-done { background: var(--snack); }

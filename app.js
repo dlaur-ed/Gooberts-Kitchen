@@ -1,4 +1,4 @@
-const APP_VERSION = "2.4";
+const APP_VERSION = "2.6";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -24,6 +24,18 @@ const PROTECTED_DAYS_KEY = "goobert-protected-days";
 const STATS_META_KEY = "goobert-stats-meta";
 
 const BACK_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#3A2F2B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// toISOString() converts to UTC, which silently shifts the calendar date for
+// anyone west of UTC once it's evening/night locally (e.g. 10pm local can
+// already be "tomorrow" in UTC). Use this everywhere we need a YYYY-MM-DD
+// string for the user's actual local day instead.
+function localISO(date) {
+  const d = date || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 // ---------- Easter eggs ----------
 // Add more by giving a new keyword an array of joke "recipes" in the same
@@ -151,7 +163,9 @@ function removeFromPlan(date, id) {
   savePlan(MEAL_PLAN);
 }
 function findRecipeById(id) {
-  return RECIPES.find(r => r.id === id) || allEasterEggRecipes().find(r => r.id === id);
+  return RECIPES.find(r => r.id === id)
+    || allEasterEggRecipes().find(r => r.id === id)
+    || CUSTOM_SNACKS.find(s => s.id === id);
 }
 function tallyForDate(date) {
   const ids = MEAL_PLAN[date] || [];
@@ -236,13 +250,19 @@ function isDayLogged(dateISO) {
 function computeCurrentStreak() {
   const cursor = new Date();
   cursor.setHours(0, 0, 0, 0);
-  let iso = cursor.toISOString().slice(0, 10);
-  // if today hasn't been logged yet, don't let that alone break an existing streak —
-  // start counting from yesterday instead
-  if (!isDayLogged(iso)) cursor.setDate(cursor.getDate() - 1);
+  const todayIso = localISO(cursor);
+
+  // A cheat token spent on today shouldn't inflate today's streak count —
+  // only an actual cooked meal counts for "today." Once today is over and
+  // becomes a past day, isDayLogged() (which does count protected days)
+  // takes over, so the streak is still protected — it just isn't awarded
+  // early.
+  const todayActuallyCooked = COOK_LOG.some(e => e.date === todayIso);
+  if (!todayActuallyCooked) cursor.setDate(cursor.getDate() - 1);
+
   let streak = 0;
   while (true) {
-    const ci = cursor.toISOString().slice(0, 10);
+    const ci = localISO(cursor);
     if (isDayLogged(ci)) { streak++; cursor.setDate(cursor.getDate() - 1); }
     else break;
   }
@@ -300,9 +320,161 @@ function recentHistory(limit = 10) {
   return COOK_LOG.slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
 }
 
+// ---------- Custom Snack Library ----------
+const CUSTOM_SNACKS_KEY = "goobert-custom-snacks";
+function loadCustomSnacks() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_SNACKS_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveCustomSnacks(list) { localStorage.setItem(CUSTOM_SNACKS_KEY, JSON.stringify(list)); }
+let CUSTOM_SNACKS = loadCustomSnacks();
+
+function addCustomSnack(snack) {
+  CUSTOM_SNACKS.push({
+    id: "CUSTOM-" + Date.now(),
+    category: "snack",
+    isCustomSnack: true,
+    ...snack,
+  });
+  saveCustomSnacks(CUSTOM_SNACKS);
+}
+function deleteCustomSnack(id) {
+  CUSTOM_SNACKS = CUSTOM_SNACKS.filter(s => s.id !== id);
+  saveCustomSnacks(CUSTOM_SNACKS);
+}
+// A spontaneous snack log (unlike toggleCooked, this always appends —
+// you might reasonably eat the same snack twice in one day).
+function logSnackEaten(date, snack) {
+  COOK_LOG.push({ date, recipeId: snack.id, category: snack.category, timestamp: Date.now() });
+  saveCookLog(COOK_LOG);
+  refreshStreakAndTokens();
+}
+
+// ---------- Achievements ----------
+const ACHIEVEMENTS_KEY = "goobert-achievements-unlocked";
+function loadUnlockedAchievements() {
+  try { return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY) || "{}"); }
+  catch { return {}; }
+}
+function saveUnlockedAchievements(m) { localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(m)); }
+let UNLOCKED_ACHIEVEMENTS = loadUnlockedAchievements();
+
+// Best-guess unlock conditions — the original design doc named these without
+// defining exact thresholds, so these are reasonable interpretations, easy
+// to retune later.
+const ACHIEVEMENTS = [
+  { id: "fresh-start", icon: "🌱", name: "Fresh Start", desc: "Cook your first meal", check: () => COOK_LOG.length >= 1 },
+  { id: "first-breakfast", icon: "🌅", name: "First Breakfast", desc: "Cook a breakfast recipe", check: () => COOK_LOG.some(e => e.category === "breakfast") },
+  { id: "home-chef", icon: "👨‍🍳", name: "Home Chef", desc: "Cook 10 meals total", check: () => COOK_LOG.length >= 10 },
+  { id: "recipe-collector", icon: "📖", name: "Recipe Collector", desc: "Favourite 5 recipes", check: () => FAVOURITES.size >= 5 },
+  { id: "deck-builder", icon: "🗂️", name: "Deck Builder", desc: "Plan 7 different recipes", check: () => new Set(Object.values(MEAL_PLAN).flat()).size >= 7 },
+  { id: "one-good-week", icon: "🔥", name: "One Good Week", desc: "Reach a 7-day streak", check: () => STATS_META.longestStreak >= 7 },
+  { id: "habit-builder", icon: "💪", name: "Habit Builder", desc: "Reach a 14-day streak", check: () => STATS_META.longestStreak >= 14 },
+  { id: "variety-champion", icon: "🎨", name: "Variety Champion", desc: "Cook from every category", check: () => Object.values(categoryBreakdown()).every(c => c > 0) },
+  { id: "date-night", icon: "🍷", name: "Date Night", desc: "Cook a dinner on a Fri or Sat", check: () => COOK_LOG.some(e => e.category === "dinner" && [5, 6].includes(new Date(e.date + "T00:00:00").getDay())) },
+  { id: "teamwork", icon: "🤝", name: "Teamwork", desc: "Plan 3+ meals in one day", check: () => Object.values(MEAL_PLAN).some(list => list.length >= 3) },
+];
+
+function refreshAchievements() {
+  const newlyUnlocked = [];
+  ACHIEVEMENTS.forEach(a => {
+    if (!UNLOCKED_ACHIEVEMENTS[a.id] && a.check()) {
+      UNLOCKED_ACHIEVEMENTS[a.id] = Date.now();
+      newlyUnlocked.push(a);
+    }
+  });
+  if (newlyUnlocked.length) saveUnlockedAchievements(UNLOCKED_ACHIEVEMENTS);
+  return newlyUnlocked;
+}
+
+// ---------- Real-Life Rewards ----------
+const REWARDS_KEY = "goobert-rewards";
+function loadRewards() {
+  try { return JSON.parse(localStorage.getItem(REWARDS_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveRewards(list) { localStorage.setItem(REWARDS_KEY, JSON.stringify(list)); }
+let REWARDS = loadRewards();
+
+const REWARD_TRIGGER_LABELS = {
+  streak: "day streak",
+  totalCooked: "meals cooked",
+  uniqueRecipes: "unique recipes tried",
+  categoryCooked: "meals cooked in one category",
+};
+
+function rewardProgress(reward) {
+  switch (reward.triggerType) {
+    case "streak": return STATS_META.longestStreak;
+    case "totalCooked": return COOK_LOG.length;
+    case "uniqueRecipes": return new Set(COOK_LOG.map(e => e.recipeId)).size;
+    case "categoryCooked": return COOK_LOG.filter(e => e.category === reward.category).length;
+    default: return 0;
+  }
+}
+function addReward(reward) {
+  REWARDS.push({ id: "REWARD-" + Date.now(), unlocked: false, unlockedAt: null, ...reward });
+  saveRewards(REWARDS);
+}
+function deleteReward(id) {
+  REWARDS = REWARDS.filter(r => r.id !== id);
+  saveRewards(REWARDS);
+}
+function refreshRewards() {
+  const newlyUnlocked = [];
+  REWARDS.forEach(r => {
+    if (!r.unlocked && rewardProgress(r) >= r.target) {
+      r.unlocked = true;
+      r.unlockedAt = Date.now();
+      newlyUnlocked.push(r);
+    }
+  });
+  if (newlyUnlocked.length) saveRewards(REWARDS);
+  return newlyUnlocked;
+}
+
+// Runs all the "did anything cross a threshold" checks in one place, and
+// surfaces a Goobert toast for anything newly unlocked. Call at the top of
+// any screen render so progress stays live everywhere.
+function refreshProgress() {
+  const streak = refreshStreakAndTokens();
+  const newAchievements = refreshAchievements();
+  const newRewards = refreshRewards();
+  newAchievements.forEach(a => showGoobertToast(`🏆 Achievement unlocked: ${a.name}!`));
+  newRewards.forEach(r => showGoobertToast(`🎁 Reward unlocked: ${r.name}!`));
+  return streak;
+}
+
+// ---------- Goobert toast (floating reaction bubble) ----------
+const GOOBERT_LINES = [
+  "Nice work! 🍽️",
+  "Baby Goobert is proud of you!",
+  "Look at you go! 🌟",
+  "That's the spirit!",
+  "Yum, great choice!",
+];
+const GOOBERT_TREAT_LINES = [
+  "Ooh, cake?! Baby Goobert approves 🍰",
+  "A treat! Baby Goobert's favourite kind of day.",
+  "Sweet pick! Baby Goobert is drooling.",
+];
+function showGoobertToast(message) {
+  const existing = document.querySelector(".goobert-toast");
+  if (existing) existing.remove();
+  const el = document.createElement("div");
+  el.className = "goobert-toast";
+  el.innerHTML = `<img src="assets/baby_goobert.png" alt="">  <span>${message}</span>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("show"));
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => el.remove(), 300);
+  }, 2200);
+}
+
 // ---------- Dates ----------
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return localISO(new Date());
 }
 let selectedDate = todayISO();
 
@@ -313,7 +485,7 @@ function dateStripHTML() {
   for (let i = 0; i < 14; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
-    const iso = d.toISOString().slice(0, 10);
+    const iso = localISO(d);
     const dow = i === 0 ? "Today" : i === 1 ? "Tmrw" : d.toLocaleDateString(undefined, { weekday: "short" });
     chips.push(`
       <button class="date-chip ${iso === selectedDate ? "active" : ""}" data-date="${iso}">
@@ -424,7 +596,7 @@ function applyFilters() {
 }
 
 function renderLibrary() {
-  const streak = refreshStreakAndTokens();
+  const streak = refreshProgress();
   const filtered = applyFilters();
 
   const categoryChips = ["all", "breakfast", "snack", "dinner", "treat"].map(cat => {
@@ -470,9 +642,31 @@ function renderLibrary() {
     </div>
     ${eggBanner}
     <div class="grid">${cards}</div>
+
+    <div class="goobert-corner">
+      <div class="goobert-mascot-wrap">
+        <img src="assets/baby_goobert.png" class="goobert-mascot-img" id="goobert-mascot" alt="Baby Goobert" />
+        <div class="speech-bubble" id="goobert-bubble"></div>
+      </div>
+      <button class="snack-corner-btn" onclick="location.hash='#/snacks'">🦥 Visit Baby Goobert's Snack Corner</button>
+    </div>
+
     <footer class="tag-line">🐢 ${RECIPES.length} recipes and counting</footer>
     ${bottomNavHTML("library")}
   `;
+
+  const mascotEl = document.getElementById("goobert-mascot");
+  const bubbleEl = document.getElementById("goobert-bubble");
+  if (mascotEl && bubbleEl) {
+    mascotEl.addEventListener("click", () => {
+      mascotEl.classList.remove("bounce");
+      void mascotEl.offsetWidth; // restart animation even on repeated taps
+      mascotEl.classList.add("bounce");
+      bubbleEl.textContent = GOOBERT_LINES[Math.floor(Math.random() * GOOBERT_LINES.length)];
+      bubbleEl.classList.add("show");
+      setTimeout(() => bubbleEl.classList.remove("show"), 2000);
+    });
+  }
 
   app.querySelectorAll(".filter-chip[data-cat]").forEach(btn => {
     btn.addEventListener("click", () => { activeCategory = btn.dataset.cat; renderLibrary(); });
@@ -733,7 +927,13 @@ function renderDecide() {
   }
 
   const next = () => { decideIndex++; renderDecide(); };
-  const addAndNext = () => { addToPlan(selectedDate, r.id); next(); };
+  const addAndNext = () => {
+    addToPlan(selectedDate, r.id);
+    if (r.category === "treat") {
+      showGoobertToast(GOOBERT_TREAT_LINES[Math.floor(Math.random() * GOOBERT_TREAT_LINES.length)]);
+    }
+    next();
+  };
 
   document.getElementById("skip-btn").addEventListener("click", next);
   document.getElementById("add-btn").addEventListener("click", addAndNext);
@@ -822,7 +1022,7 @@ function macroTallyRow(label, value, goal, unit) {
 let planCategory = "breakfast";
 
 function renderPlan() {
-  refreshStreakAndTokens();
+  refreshProgress();
   const tally = tallyForDate(selectedDate);
   const ids = MEAL_PLAN[selectedDate] || [];
   const planned = ids.map(findRecipeById).filter(Boolean);
@@ -925,7 +1125,11 @@ function renderPlan() {
 
   app.querySelectorAll(".cook-check").forEach(btn => {
     btn.addEventListener("click", () => {
+      const wasCooked = isCooked(selectedDate, btn.dataset.cook);
       toggleCooked(selectedDate, btn.dataset.cook, btn.dataset.cookCat);
+      if (!wasCooked) {
+        showGoobertToast(GOOBERT_LINES[Math.floor(Math.random() * GOOBERT_LINES.length)]);
+      }
       renderPlan();
     });
   });
@@ -989,17 +1193,21 @@ function renderGoals() {
 
 // ---------- Stats ----------
 function renderStats() {
-  const streak = refreshStreakAndTokens();
+  const streak = refreshProgress();
   const totalCooked = COOK_LOG.length;
   const breakdown = categoryBreakdown();
   const topList = mostCookedList(5);
   const recent = recentHistory(10);
 
+  const statThumb = (r) => r.isCustomSnack
+    ? `<div class="stat-thumb emoji-thumb">🍎</div>`
+    : `<div class="stat-thumb" style="background-image:url('assets/${r.image}')"></div>`;
+
   const topHTML = topList.length
     ? topList.map((x, i) => `
         <div class="stat-row">
           <span class="stat-rank">#${i + 1}</span>
-          <div class="stat-thumb" style="background-image:url('assets/${x.recipe.image}')"></div>
+          ${statThumb(x.recipe)}
           <div class="stat-row-info">
             <p class="stat-row-title">${x.recipe.title}</p>
             <p class="stat-row-sub">${x.count}× cooked</p>
@@ -1012,7 +1220,7 @@ function renderStats() {
     if (!r) return "";
     return `
       <div class="stat-row">
-        <div class="stat-thumb" style="background-image:url('assets/${r.image}')"></div>
+        ${statThumb(r)}
         <div class="stat-row-info">
           <p class="stat-row-title">${r.title}</p>
           <p class="stat-row-sub">${e.date}</p>
@@ -1047,6 +1255,25 @@ function renderStats() {
       </div>
 
       <div class="section">
+        <div class="shortcut-row">
+          <button class="shortcut-card" onclick="location.hash='#/achievements'">
+            <span class="shortcut-icon">🏆</span>
+            <span class="shortcut-label">Achievements</span>
+            <span class="shortcut-sub">${Object.keys(UNLOCKED_ACHIEVEMENTS).length}/${ACHIEVEMENTS.length}</span>
+          </button>
+          <button class="shortcut-card" onclick="location.hash='#/rewards'">
+            <span class="shortcut-icon">🎁</span>
+            <span class="shortcut-label">Rewards</span>
+            <span class="shortcut-sub">${REWARDS.filter(r => r.unlocked).length}/${REWARDS.length}</span>
+          </button>
+          <button class="shortcut-card" onclick="location.hash='#/snacks'">
+            <span class="shortcut-icon">🦥</span>
+            <span class="shortcut-label">Snack Corner</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
         <h2>By Category</h2>
         <div class="tally-card">
           <div class="cat-breakdown-row"><span>🌅 Breakfast</span><span>${breakdown.breakfast}</span></div>
@@ -1066,6 +1293,207 @@ function renderStats() {
   `;
 }
 
+// ---------- Snack Corner ----------
+function renderSnackCorner() {
+  refreshProgress();
+  const tally = tallyForDate(selectedDate);
+  const remainingCal = Math.max(0, GOALS.calories - tally.calories);
+  const remainingProtein = Math.max(0, GOALS.protein - tally.protein);
+
+  const allSnacks = [...RECIPES.filter(r => r.category === "snack"), ...CUSTOM_SNACKS];
+  const fitting = allSnacks
+    .filter(s => typeof s.calories === "number" && s.calories <= remainingCal + 40)
+    .sort((a, b) => b.protein - a.protein);
+
+  const snackThumb = (s) => s.isCustomSnack
+    ? `<div class="stat-thumb emoji-thumb">🍎</div>`
+    : `<div class="stat-thumb" style="background-image:url('assets/${s.image}')"></div>`;
+
+  const suggestionHTML = fitting.length
+    ? fitting.map(s => `
+        <div class="snack-suggest-row">
+          ${snackThumb(s)}
+          <div class="stat-row-info">
+            <p class="stat-row-title">${s.title}</p>
+            <p class="stat-row-sub">${s.calories} kcal · ${s.protein}g protein</p>
+          </div>
+          <button class="snack-eat-btn" data-snack="${s.id}">I ate this</button>
+        </div>`).join("")
+    : `<p class="empty-state small">Nothing fits your remaining budget right now — nice work today! 🎉</p>`;
+
+  const customListHTML = CUSTOM_SNACKS.length
+    ? CUSTOM_SNACKS.map(s => `
+        <div class="snack-suggest-row">
+          <div class="stat-thumb emoji-thumb">🍎</div>
+          <div class="stat-row-info">
+            <p class="stat-row-title">${s.title}</p>
+            <p class="stat-row-sub">${s.calories} kcal</p>
+          </div>
+          <button class="plan-remove" data-delete-snack="${s.id}" aria-label="Delete">✕</button>
+        </div>`).join("")
+    : `<p class="empty-state small">No custom snacks yet — add your own below.</p>`;
+
+  app.innerHTML = `
+    <header class="topbar">
+      <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
+      <div class="wordmark">Baby Goobert's Snack Corner</div>
+    </header>
+    <div class="detail">
+      <div class="snack-remaining-card">
+        <img src="assets/baby_goobert.png" class="snack-corner-mascot" alt="">
+        <div>
+          <p class="snack-remaining-num">${remainingCal} kcal left today</p>
+          <p class="snack-remaining-sub">${remainingProtein}g protein left</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Fits your day</h2>
+        ${suggestionHTML}
+      </div>
+
+      <div class="section">
+        <h2>Your Custom Snacks</h2>
+        ${customListHTML}
+        <button class="primary-btn" id="add-snack-btn" style="width:100%;margin-top:10px">+ Add a snack</button>
+        <div id="add-snack-form" class="add-form" style="display:none">
+          <input type="text" id="snack-title" placeholder="Snack name" />
+          <div class="form-grid-4">
+            <input type="number" id="snack-calories" placeholder="Cals" inputmode="numeric">
+            <input type="number" id="snack-protein" placeholder="Protein g" inputmode="numeric">
+            <input type="number" id="snack-carbs" placeholder="Carbs g" inputmode="numeric">
+            <input type="number" id="snack-fat" placeholder="Fat g" inputmode="numeric">
+          </div>
+          <button class="primary-btn" id="save-snack-btn" style="width:100%">Save Snack</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("add-snack-btn").addEventListener("click", () => {
+    document.getElementById("add-snack-form").style.display = "flex";
+  });
+  document.getElementById("save-snack-btn").addEventListener("click", () => {
+    const title = document.getElementById("snack-title").value.trim();
+    if (!title) return;
+    addCustomSnack({
+      title,
+      calories: Number(document.getElementById("snack-calories").value) || 0,
+      protein: Number(document.getElementById("snack-protein").value) || 0,
+      carbs: Number(document.getElementById("snack-carbs").value) || 0,
+      fat: Number(document.getElementById("snack-fat").value) || 0,
+    });
+    renderSnackCorner();
+  });
+  app.querySelectorAll("[data-delete-snack]").forEach(btn => {
+    btn.addEventListener("click", () => { deleteCustomSnack(btn.dataset.deleteSnack); renderSnackCorner(); });
+  });
+  app.querySelectorAll("[data-snack]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const snack = allSnacks.find(s => s.id === btn.dataset.snack);
+      if (!snack) return;
+      logSnackEaten(selectedDate, snack);
+      showGoobertToast(`Yum! Logged ${snack.title} 🍪`);
+      renderSnackCorner();
+    });
+  });
+}
+
+// ---------- Achievements ----------
+function renderAchievements() {
+  refreshProgress();
+  const rows = ACHIEVEMENTS.map(a => {
+    const unlocked = !!UNLOCKED_ACHIEVEMENTS[a.id];
+    return `
+      <div class="achievement-row ${unlocked ? "unlocked" : "locked"}">
+        <span class="achievement-icon">${unlocked ? a.icon : "🔒"}</span>
+        <div class="stat-row-info">
+          <p class="stat-row-title">${a.name}</p>
+          <p class="stat-row-sub">${a.desc}</p>
+        </div>
+      </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <header class="topbar">
+      <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
+      <div class="wordmark">Achievements<small>${Object.keys(UNLOCKED_ACHIEVEMENTS).length} of ${ACHIEVEMENTS.length} unlocked</small></div>
+    </header>
+    <div class="detail">${rows}</div>
+  `;
+}
+
+// ---------- Real-Life Rewards ----------
+function renderRewards() {
+  refreshProgress();
+  const rows = REWARDS.length
+    ? REWARDS.map(r => {
+        const progress = rewardProgress(r);
+        const pct = Math.min(100, Math.round((progress / r.target) * 100));
+        const catNote = r.triggerType === "categoryCooked" ? ` (${CATEGORY_LABELS[r.category]})` : "";
+        return `
+          <div class="reward-row ${r.unlocked ? "unlocked" : ""}">
+            <div class="reward-row-top">
+              <p class="stat-row-title">${r.unlocked ? "🎉 " : ""}${r.name}</p>
+              <button class="plan-remove" data-delete-reward="${r.id}" aria-label="Delete">✕</button>
+            </div>
+            <p class="stat-row-sub">${progress} / ${r.target} ${REWARD_TRIGGER_LABELS[r.triggerType]}${catNote}</p>
+            <div class="tally-track"><div class="tally-fill ${r.unlocked ? "reward-done" : ""}" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join("")
+    : `<p class="empty-state small">No rewards yet — add one below.</p>`;
+
+  app.innerHTML = `
+    <header class="topbar">
+      <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
+      <div class="wordmark">Real-Life Rewards</div>
+    </header>
+    <div class="detail">
+      ${rows}
+      <button class="primary-btn" id="add-reward-btn" style="width:100%;margin-top:14px">+ Add a Reward</button>
+      <div id="add-reward-form" class="add-form" style="display:none">
+        <input type="text" id="reward-name" placeholder="Reward (e.g. Sushi date)" />
+        <select id="reward-trigger">
+          <option value="streak">Reach a day streak</option>
+          <option value="totalCooked">Cook X meals total</option>
+          <option value="uniqueRecipes">Try X unique recipes</option>
+          <option value="categoryCooked">Cook X meals in one category</option>
+        </select>
+        <select id="reward-category" style="display:none">
+          <option value="breakfast">Breakfast</option>
+          <option value="snack">Snack</option>
+          <option value="dinner">Dinner</option>
+          <option value="treat">Treat</option>
+        </select>
+        <input type="number" id="reward-target" placeholder="Target number" inputmode="numeric" />
+        <button class="primary-btn" id="save-reward-btn" style="width:100%">Save Reward</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("add-reward-btn").addEventListener("click", () => {
+    document.getElementById("add-reward-form").style.display = "flex";
+  });
+  document.getElementById("reward-trigger").addEventListener("change", (e) => {
+    document.getElementById("reward-category").style.display = e.target.value === "categoryCooked" ? "block" : "none";
+  });
+  document.getElementById("save-reward-btn").addEventListener("click", () => {
+    const name = document.getElementById("reward-name").value.trim();
+    const target = Number(document.getElementById("reward-target").value) || 0;
+    if (!name || !target) return;
+    addReward({
+      name,
+      triggerType: document.getElementById("reward-trigger").value,
+      category: document.getElementById("reward-category").value,
+      target,
+    });
+    renderRewards();
+  });
+  app.querySelectorAll("[data-delete-reward]").forEach(btn => {
+    btn.addEventListener("click", () => { deleteReward(btn.dataset.deleteReward); renderRewards(); });
+  });
+}
+
 function router() {
   const hash = location.hash || "#/";
   const recipeMatch = hash.match(/^#\/recipe\/(.+)$/);
@@ -1074,6 +1502,9 @@ function router() {
   if (hash === "#/plan") { renderPlan(); return; }
   if (hash === "#/goals") { renderGoals(); return; }
   if (hash === "#/stats") { renderStats(); return; }
+  if (hash === "#/snacks") { renderSnackCorner(); return; }
+  if (hash === "#/achievements") { renderAchievements(); return; }
+  if (hash === "#/rewards") { renderRewards(); return; }
   renderLibrary();
 }
 
