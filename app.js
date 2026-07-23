@@ -1,4 +1,4 @@
-const APP_VERSION = "2.7";
+const APP_VERSION = "2.9";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -124,6 +124,21 @@ function allEasterEggRecipes() {
 }
 
 const app = document.getElementById("app");
+
+// All saves go through this so a full-storage error (most likely from a
+// large photo) never fails silently. Returns true/false so callers — 
+// especially the recipe editor — can decide whether it's safe to navigate
+// away or whether the user needs to fix something first.
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.error("Storage write failed for", key, err);
+    showGoobertToast("⚠️ Storage's full — couldn't save. Try a smaller photo or delete an old version.");
+    return false;
+  }
+}
 let RECIPES = [];
 
 // ---- UI state ----
@@ -133,6 +148,8 @@ let sortBy = "default";
 let onlyHighProtein = false;
 let onlyQuick = false;
 let onlyFavourites = false;
+let dietaryFilters = new Set();
+const DIETARY_OPTIONS = ["vegetarian", "vegan", "gluten-free", "dairy-free"];
 
 function loadFavourites() {
   try {
@@ -142,7 +159,7 @@ function loadFavourites() {
   }
 }
 function saveFavourites(set) {
-  localStorage.setItem(FAV_KEY, JSON.stringify([...set]));
+  return safeSetItem(FAV_KEY, JSON.stringify([...set]));
 }
 let FAVOURITES = loadFavourites();
 
@@ -157,7 +174,7 @@ function loadPlan() {
   try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "{}"); }
   catch { return {}; }
 }
-function savePlan(p) { localStorage.setItem(PLAN_KEY, JSON.stringify(p)); }
+function savePlan(p) { return safeSetItem(PLAN_KEY, JSON.stringify(p)); }
 let MEAL_PLAN = loadPlan();
 
 function addToPlan(date, id) {
@@ -175,14 +192,17 @@ function loadRecipeVersions() {
   try { return JSON.parse(localStorage.getItem(RECIPE_VERSIONS_KEY) || "{}"); }
   catch { return {}; }
 }
-function saveRecipeVersions(v) { localStorage.setItem(RECIPE_VERSIONS_KEY, JSON.stringify(v)); }
+function saveRecipeVersions(v) { return safeSetItem(RECIPE_VERSIONS_KEY, JSON.stringify(v)); }
 let RECIPE_VERSIONS = loadRecipeVersions();
 
 // Returns { all: [v1 (original), ...saved versions], defaultVersionId }
 function getRecipeVersions(baseRecipe) {
   const stored = RECIPE_VERSIONS[baseRecipe.id] || { versions: [], defaultVersionId: "v1" };
   const v1 = { versionId: "v1", versionLabel: "Original", ...baseRecipe };
-  return { all: [v1, ...stored.versions], defaultVersionId: stored.defaultVersionId || "v1" };
+  // Force-correct id on every read — this self-heals any version saved by the
+  // v2.7 bug where saved versions had no id at all.
+  const versions = stored.versions.map(v => ({ ...v, id: baseRecipe.id }));
+  return { all: [v1, ...versions], defaultVersionId: stored.defaultVersionId || "v1" };
 }
 function getDefaultVersion(baseRecipe) {
   const { all, defaultVersionId } = getRecipeVersions(baseRecipe);
@@ -193,14 +213,22 @@ function addRecipeVersion(baseId, fields) {
   const entry = RECIPE_VERSIONS[baseId];
   const num = entry.versions.length + 2; // v1 is always the untouched original
   const versionId = "v" + num;
-  entry.versions.push({ versionId, versionLabel: "Version " + num, ...fields });
-  saveRecipeVersions(RECIPE_VERSIONS);
+  entry.versions.push({ versionId, versionLabel: "Version " + num, ...fields, id: baseId });
+  if (!saveRecipeVersions(RECIPE_VERSIONS)) {
+    entry.versions.pop(); // keep memory consistent with what's actually persisted
+    return null;
+  }
   return versionId;
 }
 function setDefaultVersion(baseId, versionId) {
   if (!RECIPE_VERSIONS[baseId]) RECIPE_VERSIONS[baseId] = { versions: [], defaultVersionId: "v1" };
+  const previous = RECIPE_VERSIONS[baseId].defaultVersionId;
   RECIPE_VERSIONS[baseId].defaultVersionId = versionId;
-  saveRecipeVersions(RECIPE_VERSIONS);
+  if (!saveRecipeVersions(RECIPE_VERSIONS)) {
+    RECIPE_VERSIONS[baseId].defaultVersionId = previous;
+    return false;
+  }
+  return true;
 }
 
 // ---------- Custom (fully user-created) recipes ----------
@@ -209,18 +237,26 @@ function loadCustomRecipes() {
   try { return JSON.parse(localStorage.getItem(CUSTOM_RECIPES_KEY) || "[]"); }
   catch { return []; }
 }
-function saveCustomRecipes(list) { localStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(list)); }
+function saveCustomRecipes(list) { return safeSetItem(CUSTOM_RECIPES_KEY, JSON.stringify(list)); }
 let CUSTOM_RECIPES = loadCustomRecipes();
 
 function addCustomRecipe(fields) {
   const id = "CUSTOMRECIPE-" + Date.now();
-  CUSTOM_RECIPES.push({ id, isCustomRecipe: true, ...fields });
-  saveCustomRecipes(CUSTOM_RECIPES);
+  CUSTOM_RECIPES.push({ isCustomRecipe: true, ...fields, id });
+  if (!saveCustomRecipes(CUSTOM_RECIPES)) {
+    CUSTOM_RECIPES = CUSTOM_RECIPES.filter(r => r.id !== id);
+    return null;
+  }
   return id;
 }
 function updateCustomRecipe(id, fields) {
+  const previous = CUSTOM_RECIPES;
   CUSTOM_RECIPES = CUSTOM_RECIPES.map(r => (r.id === id ? { ...r, ...fields, id, isCustomRecipe: true } : r));
-  saveCustomRecipes(CUSTOM_RECIPES);
+  if (!saveCustomRecipes(CUSTOM_RECIPES)) {
+    CUSTOM_RECIPES = previous;
+    return false;
+  }
+  return true;
 }
 function deleteCustomRecipe(id) {
   CUSTOM_RECIPES = CUSTOM_RECIPES.filter(r => r.id !== id);
@@ -261,7 +297,7 @@ function loadGoals() {
   try { return { ...DEFAULT_GOALS, ...JSON.parse(localStorage.getItem(GOALS_KEY) || "{}") }; }
   catch { return { ...DEFAULT_GOALS }; }
 }
-function saveGoals(g) { localStorage.setItem(GOALS_KEY, JSON.stringify(g)); }
+function saveGoals(g) { return safeSetItem(GOALS_KEY, JSON.stringify(g)); }
 let GOALS = loadGoals();
 
 // ---------- Which macros to show in Plan totals ----------
@@ -271,7 +307,7 @@ function loadTallyToggles() {
   try { return { ...DEFAULT_TALLY_TOGGLES, ...JSON.parse(localStorage.getItem(TALLY_TOGGLES_KEY) || "{}") }; }
   catch { return { ...DEFAULT_TALLY_TOGGLES }; }
 }
-function saveTallyToggles(t) { localStorage.setItem(TALLY_TOGGLES_KEY, JSON.stringify(t)); }
+function saveTallyToggles(t) { return safeSetItem(TALLY_TOGGLES_KEY, JSON.stringify(t)); }
 let TALLY_TOGGLES = loadTallyToggles();
 
 const GOAL_FIELDS = [
@@ -287,14 +323,14 @@ function loadCookLog() {
   try { return JSON.parse(localStorage.getItem(COOK_LOG_KEY) || "[]"); }
   catch { return []; }
 }
-function saveCookLog(log) { localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log)); }
+function saveCookLog(log) { return safeSetItem(COOK_LOG_KEY, JSON.stringify(log)); }
 let COOK_LOG = loadCookLog();
 
 function loadProtectedDays() {
   try { return JSON.parse(localStorage.getItem(PROTECTED_DAYS_KEY) || "[]"); }
   catch { return []; }
 }
-function saveProtectedDays(days) { localStorage.setItem(PROTECTED_DAYS_KEY, JSON.stringify(days)); }
+function saveProtectedDays(days) { return safeSetItem(PROTECTED_DAYS_KEY, JSON.stringify(days)); }
 let PROTECTED_DAYS = loadProtectedDays();
 
 function loadStatsMeta() {
@@ -304,7 +340,7 @@ function loadStatsMeta() {
   try { return { ...defaults, ...JSON.parse(localStorage.getItem(STATS_META_KEY) || "{}") }; }
   catch { return defaults; }
 }
-function saveStatsMeta(m) { localStorage.setItem(STATS_META_KEY, JSON.stringify(m)); }
+function saveStatsMeta(m) { return safeSetItem(STATS_META_KEY, JSON.stringify(m)); }
 let STATS_META = loadStatsMeta();
 
 function isCooked(date, recipeId) {
@@ -401,17 +437,17 @@ function loadCustomSnacks() {
   try { return JSON.parse(localStorage.getItem(CUSTOM_SNACKS_KEY) || "[]"); }
   catch { return []; }
 }
-function saveCustomSnacks(list) { localStorage.setItem(CUSTOM_SNACKS_KEY, JSON.stringify(list)); }
+function saveCustomSnacks(list) { return safeSetItem(CUSTOM_SNACKS_KEY, JSON.stringify(list)); }
 let CUSTOM_SNACKS = loadCustomSnacks();
 
 function addCustomSnack(snack) {
-  CUSTOM_SNACKS.push({
-    id: "CUSTOM-" + Date.now(),
-    category: "snack",
-    isCustomSnack: true,
-    ...snack,
-  });
-  saveCustomSnacks(CUSTOM_SNACKS);
+  const id = "CUSTOM-" + Date.now();
+  CUSTOM_SNACKS.push({ id, category: "snack", isCustomSnack: true, ...snack });
+  if (!saveCustomSnacks(CUSTOM_SNACKS)) {
+    CUSTOM_SNACKS = CUSTOM_SNACKS.filter(s => s.id !== id);
+    return null;
+  }
+  return id;
 }
 function deleteCustomSnack(id) {
   CUSTOM_SNACKS = CUSTOM_SNACKS.filter(s => s.id !== id);
@@ -431,12 +467,25 @@ function loadUnlockedAchievements() {
   try { return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY) || "{}"); }
   catch { return {}; }
 }
-function saveUnlockedAchievements(m) { localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(m)); }
+function saveUnlockedAchievements(m) { return safeSetItem(ACHIEVEMENTS_KEY, JSON.stringify(m)); }
 let UNLOCKED_ACHIEVEMENTS = loadUnlockedAchievements();
+
+// ---------- Mascot tap tracking (feeds hidden achievements) ----------
+const MASCOT_TAPS_KEY = "goobert-mascot-taps";
+function loadMascotTaps() {
+  const n = Number(localStorage.getItem(MASCOT_TAPS_KEY));
+  return Number.isFinite(n) ? n : 0;
+}
+let MASCOT_TAPS = loadMascotTaps();
+function incrementMascotTaps() {
+  MASCOT_TAPS++;
+  safeSetItem(MASCOT_TAPS_KEY, String(MASCOT_TAPS));
+}
 
 // Best-guess unlock conditions — the original design doc named these without
 // defining exact thresholds, so these are reasonable interpretations, easy
-// to retune later.
+// to retune later. `hidden: true` achievements stay a mystery ("???") on the
+// Achievements screen until unlocked, per the design doc's intent.
 const ACHIEVEMENTS = [
   { id: "fresh-start", icon: "🌱", name: "Fresh Start", desc: "Cook your first meal", check: () => COOK_LOG.length >= 1 },
   { id: "first-breakfast", icon: "🌅", name: "First Breakfast", desc: "Cook a breakfast recipe", check: () => COOK_LOG.some(e => e.category === "breakfast") },
@@ -448,6 +497,8 @@ const ACHIEVEMENTS = [
   { id: "variety-champion", icon: "🎨", name: "Variety Champion", desc: "Cook from every category", check: () => Object.values(categoryBreakdown()).every(c => c > 0) },
   { id: "date-night", icon: "🍷", name: "Date Night", desc: "Cook a dinner on a Fri or Sat", check: () => COOK_LOG.some(e => e.category === "dinner" && [5, 6].includes(new Date(e.date + "T00:00:00").getDay())) },
   { id: "teamwork", icon: "🤝", name: "Teamwork", desc: "Plan 3+ meals in one day", check: () => Object.values(MEAL_PLAN).some(list => list.length >= 3) },
+  { id: "boop", icon: "👆", name: "Boop!", desc: "Tap Baby Goobert", hidden: true, check: () => MASCOT_TAPS >= 1 },
+  { id: "best-friends", icon: "🤗", name: "Best Friends", desc: "Interact with Baby Goobert 100 times", hidden: true, check: () => MASCOT_TAPS >= 100 },
 ];
 
 function refreshAchievements() {
@@ -468,7 +519,7 @@ function loadRewards() {
   try { return JSON.parse(localStorage.getItem(REWARDS_KEY) || "[]"); }
   catch { return []; }
 }
-function saveRewards(list) { localStorage.setItem(REWARDS_KEY, JSON.stringify(list)); }
+function saveRewards(list) { return safeSetItem(REWARDS_KEY, JSON.stringify(list)); }
 let REWARDS = loadRewards();
 
 const REWARD_TRIGGER_LABELS = {
@@ -527,12 +578,42 @@ const GOOBERT_LINES = [
   "Look at you go! 🌟",
   "That's the spirit!",
   "Yum, great choice!",
+  "Where is my chocolate cake? 🍰",
+  "Nom nom nom.",
+  "You're on a roll!",
+  "Baby Goobert approves.",
+  "Delicious decision-making.",
 ];
 const GOOBERT_TREAT_LINES = [
   "Ooh, cake?! Baby Goobert approves 🍰",
   "A treat! Baby Goobert's favourite kind of day.",
   "Sweet pick! Baby Goobert is drooling.",
+  "FINALLY. Someone gets it.",
+  "Is that... chocolate? 👀",
 ];
+const GOOBERT_TAP_LINES = [
+  "Hi!! 🥰",
+  "Where is my chocolate cake?",
+  "*happy sloth noises*",
+  "Boop!",
+  "Don't rush me, I'm a sloth.",
+  "Feed me snacks.",
+  "You woke me up.",
+];
+
+// Tracks the last line shown per pool so the same line never plays twice
+// in a row — call this instead of picking randomly directly.
+const _lastGoobertLine = {};
+function pickGoobertLine(pool, key) {
+  if (pool.length <= 1) return pool[0] || "";
+  let line;
+  do {
+    line = pool[Math.floor(Math.random() * pool.length)];
+  } while (line === _lastGoobertLine[key]);
+  _lastGoobertLine[key] = line;
+  return line;
+}
+
 function showGoobertToast(message) {
   const existing = document.querySelector(".goobert-toast");
   if (existing) existing.remove();
@@ -546,6 +627,34 @@ function showGoobertToast(message) {
     setTimeout(() => el.remove(), 300);
   }, 2200);
 }
+
+// ---------- Help tooltips ----------
+const SCREEN_HELP = {
+  library: "Browse all your recipes here. Use search, the category chips, and filters to find something. Tap Baby Goobert for a surprise, or use the Snack Corner and Add Recipe buttons below the grid.",
+  decide: "Can't decide what to eat? Pick a category, then swipe right (or tap ❤️) on anything that sounds good — it gets added to your plan for the selected day. Swipe left or tap ✕ to skip. 🔀 reshuffles the deck.",
+  plan: "Build a day's meals by dragging recipes up from the strip below into your Planned list. Check items off once you've actually made them — that's what counts toward your streak, not just planning them.",
+  goals: "Set your daily macro targets here. Uncheck anything you don't want cluttering up the Plan totals — you can always turn it back on later.",
+  snacks: "Shows snack ideas that fit whatever's left in your day's macro budget. Add your own custom snacks below, or tap 'I ate this' to log one on the spot without planning it first.",
+};
+function helpButtonHTML(key) {
+  return `<button class="help-btn" data-help="${key}" aria-label="Help">?</button>`;
+}
+function showHelpModal(text) {
+  const existing = document.querySelector(".help-modal-backdrop");
+  if (existing) existing.remove();
+  const el = document.createElement("div");
+  el.className = "help-modal-backdrop";
+  el.innerHTML = `<div class="help-modal"><img src="assets/baby_goobert.png" alt=""><p>${text}</p><button class="primary-btn" id="help-close-btn">Got it</button></div>`;
+  document.body.appendChild(el);
+  el.addEventListener("click", (e) => { if (e.target === el) el.remove(); });
+  document.getElementById("help-close-btn").addEventListener("click", () => el.remove());
+}
+// Delegated once on body so help buttons work across every re-render without
+// needing a fresh listener attached each time a screen redraws.
+document.body.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-help]");
+  if (btn && SCREEN_HELP[btn.dataset.help]) showHelpModal(SCREEN_HELP[btn.dataset.help]);
+});
 
 // ---------- Dates ----------
 function todayISO() {
@@ -651,6 +760,7 @@ function applyFilters() {
   if (onlyHighProtein) list = list.filter(r => r.protein >= 20);
   if (onlyQuick) list = list.filter(r => parseMinutes(r.prep_time) <= 15);
   if (onlyFavourites) list = list.filter(r => FAVOURITES.has(r.id));
+  if (dietaryFilters.size) list = list.filter(r => [...dietaryFilters].every(tag => (r.dietary_tags || []).includes(tag)));
 
   if (searchQuery.trim()) {
     const q = searchQuery.trim().toLowerCase();
@@ -686,6 +796,9 @@ function renderLibrary() {
     <button class="filter-chip ${onlyHighProtein ? "active" : ""}" id="chip-protein">High Protein</button>
     <button class="filter-chip ${onlyQuick ? "active" : ""}" id="chip-quick">Quick (≤15 min)</button>
   `;
+  const dietaryChips = DIETARY_OPTIONS.map(tag =>
+    `<button class="filter-chip ${dietaryFilters.has(tag) ? "active" : ""}" data-diet="${tag}">${tag}</button>`
+  ).join("");
 
   const sortSelectOptions = SORT_OPTIONS.map(o =>
     `<option value="${o.value}" ${o.value === sortBy ? "selected" : ""}>${o.label}</option>`
@@ -707,6 +820,7 @@ function renderLibrary() {
         <button class="streak-badge" onclick="location.hash='#/stats'" aria-label="View stats">🔥 ${streak}</button>
         <span class="version-badge">v${APP_VERSION}</span>
       </div>
+      ${helpButtonHTML("library")}
     </header>
     <div class="search-row">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B5F58" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#6B5F58" stroke-width="2" stroke-linecap="round"/></svg>
@@ -714,6 +828,7 @@ function renderLibrary() {
     </div>
     <div class="filter-row">${categoryChips}</div>
     <div class="filter-row secondary">${toggleChips}</div>
+    <div class="filter-row secondary">${dietaryChips}</div>
     <div class="sort-row">
       <select id="sort-select">${sortSelectOptions}</select>
     </div>
@@ -742,9 +857,11 @@ function renderLibrary() {
       mascotEl.classList.remove("bounce");
       void mascotEl.offsetWidth; // restart animation even on repeated taps
       mascotEl.classList.add("bounce");
-      bubbleEl.textContent = GOOBERT_LINES[Math.floor(Math.random() * GOOBERT_LINES.length)];
+      bubbleEl.textContent = pickGoobertLine(GOOBERT_TAP_LINES, "tap");
       bubbleEl.classList.add("show");
       setTimeout(() => bubbleEl.classList.remove("show"), 2000);
+      incrementMascotTaps();
+      refreshAchievements().forEach(a => showGoobertToast(`🏆 Achievement unlocked: ${a.name}!`));
     });
   }
 
@@ -759,6 +876,14 @@ function renderLibrary() {
   document.getElementById("chip-fav").addEventListener("click", () => { onlyFavourites = !onlyFavourites; renderLibrary(); });
   document.getElementById("chip-protein").addEventListener("click", () => { onlyHighProtein = !onlyHighProtein; renderLibrary(); });
   document.getElementById("chip-quick").addEventListener("click", () => { onlyQuick = !onlyQuick; renderLibrary(); });
+  app.querySelectorAll(".filter-chip[data-diet]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tag = btn.dataset.diet;
+      if (dietaryFilters.has(tag)) dietaryFilters.delete(tag);
+      else dietaryFilters.add(tag);
+      renderLibrary();
+    });
+  });
   document.getElementById("sort-select").addEventListener("change", (e) => { sortBy = e.target.value; renderLibrary(); });
 
   const searchInput = document.getElementById("search-input");
@@ -1045,6 +1170,7 @@ function renderDecide() {
     <header class="topbar">
       <div class="wordmark">Help Me Decide<small>Swipe right to add it to your plan</small></div>
       <span class="version-badge">v${APP_VERSION}</span>
+      ${helpButtonHTML("decide")}
     </header>
     ${dateStripHTML()}
     ${decideCategoryChipsHTML()}
@@ -1074,7 +1200,7 @@ function renderDecide() {
   const addAndNext = () => {
     addToPlan(selectedDate, r.id);
     if (r.category === "treat") {
-      showGoobertToast(GOOBERT_TREAT_LINES[Math.floor(Math.random() * GOOBERT_TREAT_LINES.length)]);
+      showGoobertToast(pickGoobertLine(GOOBERT_TREAT_LINES, "treat"));
     }
     next();
   };
@@ -1228,6 +1354,7 @@ function renderPlan() {
     <header class="topbar">
       <div class="wordmark">Meal Plan<small>Drag recipes into your day</small></div>
       <span class="version-badge">v${APP_VERSION}</span>
+      ${helpButtonHTML("plan")}
     </header>
     ${dateStripHTML()}
     ${cheatRow}
@@ -1278,7 +1405,7 @@ function renderPlan() {
       const wasCooked = isCooked(selectedDate, btn.dataset.cook);
       toggleCooked(selectedDate, btn.dataset.cook, btn.dataset.cookCat);
       if (!wasCooked) {
-        showGoobertToast(GOOBERT_LINES[Math.floor(Math.random() * GOOBERT_LINES.length)]);
+        showGoobertToast(pickGoobertLine(GOOBERT_LINES, "general"));
       }
       renderPlan();
     });
@@ -1316,6 +1443,7 @@ function renderGoals() {
     <header class="topbar">
       <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
       <div class="wordmark">Daily Goals</div>
+      ${helpButtonHTML("goals")}
     </header>
     <div class="detail">
       <p style="color:var(--ink-soft);font-size:13px;margin-top:0">
@@ -1420,6 +1548,10 @@ function renderStats() {
             <span class="shortcut-icon">🦥</span>
             <span class="shortcut-label">Snack Corner</span>
           </button>
+          <button class="shortcut-card" onclick="location.hash='#/calendar'">
+            <span class="shortcut-icon">📅</span>
+            <span class="shortcut-label">Calendar</span>
+          </button>
         </div>
       </div>
 
@@ -1487,6 +1619,7 @@ function renderSnackCorner() {
     <header class="topbar">
       <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
       <div class="wordmark">Baby Goobert's Snack Corner</div>
+      ${helpButtonHTML("snacks")}
     </header>
     <div class="detail">
       <div class="snack-remaining-card">
@@ -1526,13 +1659,14 @@ function renderSnackCorner() {
   document.getElementById("save-snack-btn").addEventListener("click", () => {
     const title = document.getElementById("snack-title").value.trim();
     if (!title) return;
-    addCustomSnack({
+    const id = addCustomSnack({
       title,
       calories: Number(document.getElementById("snack-calories").value) || 0,
       protein: Number(document.getElementById("snack-protein").value) || 0,
       carbs: Number(document.getElementById("snack-carbs").value) || 0,
       fat: Number(document.getElementById("snack-fat").value) || 0,
     });
+    if (!id) return; // safeSetItem already surfaced the error toast
     renderSnackCorner();
   });
   app.querySelectorAll("[data-delete-snack]").forEach(btn => {
@@ -1554,12 +1688,13 @@ function renderAchievements() {
   refreshProgress();
   const rows = ACHIEVEMENTS.map(a => {
     const unlocked = !!UNLOCKED_ACHIEVEMENTS[a.id];
+    const isSecret = a.hidden && !unlocked;
     return `
       <div class="achievement-row ${unlocked ? "unlocked" : "locked"}">
-        <span class="achievement-icon">${unlocked ? a.icon : "🔒"}</span>
+        <span class="achievement-icon">${unlocked ? a.icon : isSecret ? "❓" : "🔒"}</span>
         <div class="stat-row-info">
-          <p class="stat-row-title">${a.name}</p>
-          <p class="stat-row-sub">${a.desc}</p>
+          <p class="stat-row-title">${isSecret ? "???" : a.name}</p>
+          <p class="stat-row-sub">${isSecret ? "A secret achievement. Keep exploring…" : a.desc}</p>
         </div>
       </div>`;
   }).join("");
@@ -1722,6 +1857,7 @@ function renderEditor() {
         <textarea id="ed-notes" rows="3">${(p.notes || []).join("\n")}</textarea>
 
         <input type="text" id="ed-tags" placeholder="Tags, comma separated" value="${(p.tags || []).join(", ")}">
+        <input type="text" id="ed-dietary" placeholder="Dietary, e.g. vegetarian, gluten-free" value="${(p.dietary_tags || []).join(", ")}">
 
         <label class="ed-checkbox"><input type="checkbox" id="ed-freezer" ${p.freezer_friendly ? "checked" : ""}> Freezer friendly</label>
         <label class="ed-checkbox"><input type="checkbox" id="ed-mealprep" ${p.meal_prep_friendly ? "checked" : ""}> Meal prep friendly</label>
@@ -1761,27 +1897,90 @@ function renderEditor() {
       method: document.getElementById("ed-method").value.split("\n").map(s => s.trim()).filter(Boolean),
       notes: document.getElementById("ed-notes").value.split("\n").map(s => s.trim()).filter(Boolean),
       tags: document.getElementById("ed-tags").value.split(",").map(s => s.trim()).filter(Boolean),
+      dietary_tags: document.getElementById("ed-dietary").value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean),
       freezer_friendly: document.getElementById("ed-freezer").checked,
       meal_prep_friendly: document.getElementById("ed-mealprep").checked,
     };
 
     if (mode === "new-version") {
       const newVersionId = addRecipeVersion(editorContext.baseId, fields);
+      if (!newVersionId) return; // safeSetItem already surfaced the error toast
       showGoobertToast("New version saved! 📝");
-      location.hash = "#/recipe/" + editorContext.baseId;
+      const baseId = editorContext.baseId;
+      editorContext = null;
+      location.hash = "#/recipe/" + baseId;
       // ensure the new (non-default) version is what's shown after navigating
-      setTimeout(() => renderDetail(editorContext.baseId, newVersionId), 0);
+      setTimeout(() => renderDetail(baseId, newVersionId), 0);
     } else if (mode === "edit-custom") {
-      updateCustomRecipe(editorContext.baseId, fields);
+      const ok = updateCustomRecipe(editorContext.baseId, fields);
+      if (!ok) return;
       showGoobertToast("Recipe updated! 📝");
-      location.hash = "#/recipe/" + editorContext.baseId;
+      const baseId = editorContext.baseId;
+      editorContext = null;
+      location.hash = "#/recipe/" + baseId;
     } else {
       const newId = addCustomRecipe(fields);
+      if (!newId) return;
       showGoobertToast("Recipe added! 🎉");
+      editorContext = null;
       location.hash = "#/recipe/" + newId;
     }
-    editorContext = null;
   });
+}
+
+// ---------- Calendar (monthly cooked-day heatmap) ----------
+let calendarMonthOffset = 0;
+function renderCalendar() {
+  refreshProgress();
+  const base = new Date();
+  base.setDate(1);
+  base.setMonth(base.getMonth() + calendarMonthOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth();
+  const monthLabel = base.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const startWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = todayISO();
+
+  let cells = "";
+  for (let i = 0; i < startWeekday; i++) cells += `<div class="cal-cell empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = localISO(new Date(year, month, d));
+    const count = COOK_LOG.filter(e => e.date === iso).length;
+    const isCheatOnly = count === 0 && PROTECTED_DAYS.includes(iso);
+    let cls = "cal-cell";
+    if (count >= 3) cls += " level-3";
+    else if (count === 2) cls += " level-2";
+    else if (count === 1) cls += " level-1";
+    if (isCheatOnly) cls += " cal-cheat";
+    if (iso === todayStr) cls += " cal-today";
+    cells += `<div class="${cls}">${d}${isCheatOnly ? "🎟" : ""}</div>`;
+  }
+
+  app.innerHTML = `
+    <header class="topbar">
+      <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
+      <div class="wordmark">Calendar</div>
+    </header>
+    <div class="detail">
+      <div class="cal-nav">
+        <button id="cal-prev" class="secondary-btn">← Prev</button>
+        <span class="cal-month-label">${monthLabel}</span>
+        <button id="cal-next" class="secondary-btn">Next →</button>
+      </div>
+      <div class="cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="cal-grid">${cells}</div>
+      <div class="cal-legend">
+        <span><i class="cal-dot level-1"></i>1 meal</span>
+        <span><i class="cal-dot level-2"></i>2 meals</span>
+        <span><i class="cal-dot level-3"></i>3+ meals</span>
+        <span>🎟 cheat day</span>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("cal-prev").addEventListener("click", () => { calendarMonthOffset--; renderCalendar(); });
+  document.getElementById("cal-next").addEventListener("click", () => { calendarMonthOffset++; renderCalendar(); });
 }
 
 function router() {
@@ -1796,6 +1995,7 @@ function router() {
   if (hash === "#/achievements") { renderAchievements(); return; }
   if (hash === "#/rewards") { renderRewards(); return; }
   if (hash === "#/editor") { renderEditor(); return; }
+  if (hash === "#/calendar") { renderCalendar(); return; }
   renderLibrary();
 }
 

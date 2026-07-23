@@ -41,6 +41,7 @@ def main() -> None:
             "method": split_pipe(r.get("method", "")),
             "notes": split_pipe(r.get("notes", "")),
             "tags": split_pipe(r.get("tags", "")),
+            "dietary_tags": split_pipe(r.get("dietary", "")),
             "freezer_friendly": r.get("freezer_friendly", "").strip().lower() in {"yes", "true", "1"},
             "meal_prep_friendly": r.get("meal_prep_friendly", "").strip().lower() in {"yes", "true", "1"},
         })
