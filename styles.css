@@ -174,6 +174,8 @@ button { font-family: inherit; -webkit-appearance: none; appearance: none; }
   color: white;
 }
 .recipe-card .info { padding: 10px 12px 12px; }
+.recipe-card .no-photo { display: flex; align-items: center; justify-content: center; background: var(--breakfast-wash); }
+.recipe-card .no-photo-icon { font-size: 32px; }
 .recipe-card .title { font-size: 14px; font-weight: 700; line-height: 1.25; margin: 0 0 4px; padding-right: 22px; }
 .recipe-card .cal { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
 .recipe-card .card-heart { position: absolute; top: 8px; right: 8px; }
@@ -862,3 +864,68 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 .reward-row.unlocked { background: var(--snack-wash); }
 .reward-row-top { display: flex; justify-content: space-between; align-items: center; }
 .tally-fill.reward-done { background: var(--snack); }
+
+/* ---------- Recipe versions + edit actions (Detail screen) ---------- */
+.version-row { padding-top: 0; }
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+.secondary-btn {
+  border: none;
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(58,47,43,0.08);
+}
+.secondary-btn.danger { color: var(--treat); }
+
+/* ---------- Recipe Editor ---------- */
+.editor-photo {
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  background: var(--card-bg);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.editor-photo-label {
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+  background: rgba(58,47,43,0.55);
+  cursor: pointer;
+}
+.add-form textarea {
+  border: none;
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  resize: vertical;
+}
+.ed-label { font-size: 11px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin: 2px 0 -4px; }
+.ed-checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.ed-checkbox input { width: 16px; height: 16px; accent-color: var(--ink); }
+
+/* ---------- Goobert's Corner layout ---------- */
+.goobert-corner-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.snack-corner-wide-btn {
+  width: 100%;
+  border: none;
+  background: var(--breakfast-wash);
+  color: #9d6b00;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 12px 16px;
+  border-radius: 14px;
+}

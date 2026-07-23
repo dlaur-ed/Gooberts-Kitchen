@@ -1,4 +1,4 @@
-const APP_VERSION = "2.6";
+const APP_VERSION = "2.7";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -35,6 +35,13 @@ function localISO(date) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+// User-uploaded photos are stored as compressed base64 data URIs; built-in
+// recipe photos are plain filenames under assets/. This resolves either.
+function recipeImageUrl(r) {
+  if (!r || !r.image) return "";
+  return r.image.startsWith("data:") ? r.image : "assets/" + r.image;
 }
 
 // ---------- Easter eggs ----------
@@ -162,10 +169,78 @@ function removeFromPlan(date, id) {
   if (MEAL_PLAN[date]) MEAL_PLAN[date] = MEAL_PLAN[date].filter(x => x !== id);
   savePlan(MEAL_PLAN);
 }
+// ---------- Recipe Versions (edits to preloaded recipes, without losing the original) ----------
+const RECIPE_VERSIONS_KEY = "goobert-recipe-versions";
+function loadRecipeVersions() {
+  try { return JSON.parse(localStorage.getItem(RECIPE_VERSIONS_KEY) || "{}"); }
+  catch { return {}; }
+}
+function saveRecipeVersions(v) { localStorage.setItem(RECIPE_VERSIONS_KEY, JSON.stringify(v)); }
+let RECIPE_VERSIONS = loadRecipeVersions();
+
+// Returns { all: [v1 (original), ...saved versions], defaultVersionId }
+function getRecipeVersions(baseRecipe) {
+  const stored = RECIPE_VERSIONS[baseRecipe.id] || { versions: [], defaultVersionId: "v1" };
+  const v1 = { versionId: "v1", versionLabel: "Original", ...baseRecipe };
+  return { all: [v1, ...stored.versions], defaultVersionId: stored.defaultVersionId || "v1" };
+}
+function getDefaultVersion(baseRecipe) {
+  const { all, defaultVersionId } = getRecipeVersions(baseRecipe);
+  return all.find(v => v.versionId === defaultVersionId) || all[0];
+}
+function addRecipeVersion(baseId, fields) {
+  if (!RECIPE_VERSIONS[baseId]) RECIPE_VERSIONS[baseId] = { versions: [], defaultVersionId: "v1" };
+  const entry = RECIPE_VERSIONS[baseId];
+  const num = entry.versions.length + 2; // v1 is always the untouched original
+  const versionId = "v" + num;
+  entry.versions.push({ versionId, versionLabel: "Version " + num, ...fields });
+  saveRecipeVersions(RECIPE_VERSIONS);
+  return versionId;
+}
+function setDefaultVersion(baseId, versionId) {
+  if (!RECIPE_VERSIONS[baseId]) RECIPE_VERSIONS[baseId] = { versions: [], defaultVersionId: "v1" };
+  RECIPE_VERSIONS[baseId].defaultVersionId = versionId;
+  saveRecipeVersions(RECIPE_VERSIONS);
+}
+
+// ---------- Custom (fully user-created) recipes ----------
+const CUSTOM_RECIPES_KEY = "goobert-custom-recipes";
+function loadCustomRecipes() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_RECIPES_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveCustomRecipes(list) { localStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(list)); }
+let CUSTOM_RECIPES = loadCustomRecipes();
+
+function addCustomRecipe(fields) {
+  const id = "CUSTOMRECIPE-" + Date.now();
+  CUSTOM_RECIPES.push({ id, isCustomRecipe: true, ...fields });
+  saveCustomRecipes(CUSTOM_RECIPES);
+  return id;
+}
+function updateCustomRecipe(id, fields) {
+  CUSTOM_RECIPES = CUSTOM_RECIPES.map(r => (r.id === id ? { ...r, ...fields, id, isCustomRecipe: true } : r));
+  saveCustomRecipes(CUSTOM_RECIPES);
+}
+function deleteCustomRecipe(id) {
+  CUSTOM_RECIPES = CUSTOM_RECIPES.filter(r => r.id !== id);
+  saveCustomRecipes(CUSTOM_RECIPES);
+}
+
+// Every recipe that should show up in Library/Decide/Plan browsing: preloaded
+// recipes (resolved to whichever version is set as default) + fully custom ones.
+function allActiveRecipes() {
+  return [...RECIPES.map(getDefaultVersion), ...CUSTOM_RECIPES];
+}
+
 function findRecipeById(id) {
-  return RECIPES.find(r => r.id === id)
-    || allEasterEggRecipes().find(r => r.id === id)
-    || CUSTOM_SNACKS.find(s => s.id === id);
+  const base = RECIPES.find(r => r.id === id);
+  if (base) return getDefaultVersion(base);
+  const egg = allEasterEggRecipes().find(r => r.id === id);
+  if (egg) return egg;
+  const customRecipe = CUSTOM_RECIPES.find(r => r.id === id);
+  if (customRecipe) return customRecipe;
+  return CUSTOM_SNACKS.find(s => s.id === id);
 }
 function tallyForDate(date) {
   const ids = MEAL_PLAN[date] || [];
@@ -549,10 +624,12 @@ function bottomNavHTML(active) {
 }
 
 function recipeCardHTML(r) {
+  const hasPhoto = !!r.image;
   return `
     <div class="recipe-card ${r.isEasterEgg ? "egg-card" : ""}" data-category="${r.category}">
       <button class="card-tap" onclick="location.hash='#/recipe/${r.id}'">
-        <div class="photo" style="background-image:url('assets/${r.image}')">
+        <div class="photo ${hasPhoto ? "" : "no-photo"}" style="${hasPhoto ? `background-image:url('${recipeImageUrl(r)}')` : ""}">
+          ${hasPhoto ? "" : `<span class="no-photo-icon">🍽️</span>`}
           <span class="cat-tag" ${r.isEasterEgg ? 'style="background:#5c7a1e"' : ""}>${r.isEasterEgg ? "☢️ Classified" : (CATEGORY_LABELS[r.category] || r.category)}</span>
         </div>
         <div class="info">
@@ -568,7 +645,7 @@ function applyFilters() {
   const egg = matchedEasterEgg(searchQuery);
   if (egg) return egg;
 
-  let list = RECIPES.slice();
+  let list = allActiveRecipes();
 
   if (activeCategory !== "all") list = list.filter(r => r.category === activeCategory);
   if (onlyHighProtein) list = list.filter(r => r.protein >= 20);
@@ -648,10 +725,13 @@ function renderLibrary() {
         <img src="assets/baby_goobert.png" class="goobert-mascot-img" id="goobert-mascot" alt="Baby Goobert" />
         <div class="speech-bubble" id="goobert-bubble"></div>
       </div>
-      <button class="snack-corner-btn" onclick="location.hash='#/snacks'">🦥 Visit Baby Goobert's Snack Corner</button>
+      <div class="goobert-corner-links">
+        <button class="snack-corner-btn" onclick="location.hash='#/snacks'">🦥 Snack Corner</button>
+        <button class="snack-corner-btn" id="add-recipe-btn">➕ Add a Recipe</button>
+      </div>
     </div>
 
-    <footer class="tag-line">🐢 ${RECIPES.length} recipes and counting</footer>
+    <footer class="tag-line">🐢 ${allActiveRecipes().length} recipes and counting</footer>
     ${bottomNavHTML("library")}
   `;
 
@@ -667,6 +747,11 @@ function renderLibrary() {
       setTimeout(() => bubbleEl.classList.remove("show"), 2000);
     });
   }
+
+  document.getElementById("add-recipe-btn").addEventListener("click", () => {
+    editorContext = { mode: "new-custom", baseId: null, prefill: {} };
+    location.hash = "#/editor";
+  });
 
   app.querySelectorAll(".filter-chip[data-cat]").forEach(btn => {
     btn.addEventListener("click", () => { activeCategory = btn.dataset.cat; renderLibrary(); });
@@ -694,8 +779,20 @@ function renderLibrary() {
   });
 }
 
-function renderDetail(id) {
-  const r = RECIPES.find(x => x.id === id) || allEasterEggRecipes().find(x => x.id === id);
+function renderDetail(id, previewVersionId) {
+  const base = RECIPES.find(x => x.id === id);
+  const isBaseRecipe = !!base;
+  const customRecipe = !isBaseRecipe ? CUSTOM_RECIPES.find(x => x.id === id) : null;
+  const egg = (!isBaseRecipe && !customRecipe) ? allEasterEggRecipes().find(x => x.id === id) : null;
+
+  let r, versionInfo = null;
+  if (isBaseRecipe) {
+    versionInfo = getRecipeVersions(base);
+    r = (previewVersionId && versionInfo.all.find(v => v.versionId === previewVersionId)) || getDefaultVersion(base);
+  } else {
+    r = customRecipe || egg;
+  }
+
   if (!r) {
     app.innerHTML = `<p class="empty-state">Recipe not found. <a href="#/">Go back</a></p>`;
     return;
@@ -715,17 +812,35 @@ function renderDetail(id) {
     ? `<div class="feature-row">${features.map(f => `<span class="feature-chip">${f}</span>`).join("")}</div>`
     : "";
 
+  const versionChipsHTML = isBaseRecipe
+    ? `<div class="filter-row version-row">${versionInfo.all.map(v =>
+        `<button class="filter-chip ${v.versionId === r.versionId ? "active" : ""}" data-version="${v.versionId}">${v.versionLabel}${v.versionId === versionInfo.defaultVersionId ? " ⭐" : ""}</button>`
+      ).join("")}</div>`
+    : "";
+
+  const isDefault = isBaseRecipe && r.versionId === versionInfo.defaultVersionId;
+  const canEdit = isBaseRecipe || !!customRecipe;
+  const actionRow = canEdit
+    ? `<div class="detail-actions">
+        ${isBaseRecipe && !isDefault ? `<button class="secondary-btn" id="set-default-btn">⭐ Set as Default</button>` : ""}
+        <button class="secondary-btn" id="edit-recipe-btn">✏️ Edit${isBaseRecipe ? " (saves as new version)" : ""}</button>
+        ${customRecipe ? `<button class="secondary-btn danger" id="delete-recipe-btn">🗑️ Delete</button>` : ""}
+      </div>`
+    : "";
+
   app.innerHTML = `
     <header class="topbar">
       <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
       <div class="wordmark">${CATEGORY_LABELS[r.category] || r.category}</div>
     </header>
+    ${versionChipsHTML}
     <div class="detail">
-      <div class="detail-hero ${r.isEasterEgg ? "egg-card" : ""}" style="background-image:url('assets/${r.image}')">
+      <div class="detail-hero ${r.isEasterEgg ? "egg-card" : ""}" style="background-image:url('${recipeImageUrl(r)}')">
         <span class="cat-tag" ${r.isEasterEgg ? 'style="background:#5c7a1e"' : `style="background:var(--${r.category})"`}>${r.isEasterEgg ? "☢️ Classified" : (CATEGORY_LABELS[r.category] || r.category)}</span>
         <div class="hero-heart">${heartButton(r.id, "lg")}</div>
       </div>
       <h1>${r.title}</h1>
+      ${actionRow}
       <div class="macro-row">
         ${macroCell("🔥", r.calories, "", "kcal")}
         ${macroCell("💪", r.protein, "g", "Protein")}
@@ -766,8 +881,37 @@ function renderDetail(id) {
 
   app.querySelector(".hero-heart .heart-btn").addEventListener("click", () => {
     toggleFavourite(r.id);
-    renderDetail(id);
+    renderDetail(id, previewVersionId);
   });
+
+  if (isBaseRecipe) {
+    app.querySelectorAll("[data-version]").forEach(btn => {
+      btn.addEventListener("click", () => renderDetail(id, btn.dataset.version));
+    });
+    const setDefaultBtn = document.getElementById("set-default-btn");
+    if (setDefaultBtn) {
+      setDefaultBtn.addEventListener("click", () => {
+        setDefaultVersion(id, r.versionId);
+        renderDetail(id, r.versionId);
+      });
+    }
+  }
+  const editBtn = document.getElementById("edit-recipe-btn");
+  if (editBtn) {
+    editBtn.addEventListener("click", () => {
+      editorContext = { mode: isBaseRecipe ? "new-version" : "edit-custom", baseId: id, prefill: r };
+      location.hash = "#/editor";
+    });
+  }
+  const deleteBtn = document.getElementById("delete-recipe-btn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", () => {
+      if (confirm("Delete this recipe? This can't be undone.")) {
+        deleteCustomRecipe(id);
+        location.hash = "#/";
+      }
+    });
+  }
 
   window.scrollTo(0, 0);
 }
@@ -780,7 +924,7 @@ let decideIndex = 0;
 let decideDeckKey = null;
 
 function shuffledDeck(category) {
-  const arr = RECIPES.filter(r => r.category === category);
+  const arr = allActiveRecipes().filter(r => r.category === category);
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -883,7 +1027,7 @@ function renderDecide() {
          <button class="primary-btn" id="reshuffle-btn">Reshuffle deck</button>
        </div>`
     : `<div class="decide-card" id="decide-card">
-         <div class="decide-photo" style="background-image:url('assets/${r.image}')">
+         <div class="decide-photo" style="background-image:url('${recipeImageUrl(r)}')">
            <span class="stamp stamp-like" id="stamp-like">LIKE</span>
            <span class="stamp stamp-skip" id="stamp-skip">SKIP</span>
          </div>
@@ -1033,7 +1177,7 @@ function renderPlan() {
         return `
         <div class="plan-row">
           <button class="cook-check ${cooked ? "checked" : ""}" data-cook="${r.id}" data-cook-cat="${r.category}" aria-label="Mark as made">${cooked ? "✓" : ""}</button>
-          <div class="plan-thumb" style="background-image:url('assets/${r.image}')"></div>
+          <div class="plan-thumb" style="background-image:url('${recipeImageUrl(r)}')"></div>
           <div class="plan-row-info">
             <p class="plan-row-title">${r.title}</p>
             <p class="plan-row-sub">${r.calories} kcal</p>
@@ -1048,13 +1192,13 @@ function renderPlan() {
   `).join("") + `<button class="filter-chip ${planCategory === "favourites" ? "active" : ""}" data-plan-cat="favourites">♥ Favourites</button>`;
 
   const stripRecipes = planCategory === "favourites"
-    ? RECIPES.filter(r => FAVOURITES.has(r.id))
-    : RECIPES.filter(r => r.category === planCategory);
+    ? allActiveRecipes().filter(r => FAVOURITES.has(r.id))
+    : allActiveRecipes().filter(r => r.category === planCategory);
   const emptyStripLabel = planCategory === "favourites" ? "favourite" : CATEGORY_LABELS[planCategory].toLowerCase();
   const strip = stripRecipes.length
     ? stripRecipes.map(r => `
         <div class="strip-card" id="strip-${r.id}">
-          <div class="photo" style="background-image:url('assets/${r.image}')">
+          <div class="photo" style="background-image:url('${recipeImageUrl(r)}')">
             <span class="cat-tag">${CATEGORY_LABELS[r.category] || r.category}</span>
           </div>
           <p class="strip-title">${r.title}</p>
@@ -1110,6 +1254,12 @@ function renderPlan() {
       <h2 style="padding:0 18px">Drag from your library ↑</h2>
       <div class="filter-row">${categoryChips}</div>
       <div class="strip-row">${strip}</div>
+    </div>
+
+    <div class="section" style="padding:0 18px">
+      <button class="snack-corner-wide-btn" onclick="location.hash='#/snacks'">
+        🦥 Feeling snacky? Visit Baby Goobert's Snack Corner
+      </button>
     </div>
     ${bottomNavHTML("plan")}
   `;
@@ -1201,7 +1351,7 @@ function renderStats() {
 
   const statThumb = (r) => r.isCustomSnack
     ? `<div class="stat-thumb emoji-thumb">🍎</div>`
-    : `<div class="stat-thumb" style="background-image:url('assets/${r.image}')"></div>`;
+    : `<div class="stat-thumb" style="background-image:url('${recipeImageUrl(r)}')"></div>`;
 
   const topHTML = topList.length
     ? topList.map((x, i) => `
@@ -1300,14 +1450,14 @@ function renderSnackCorner() {
   const remainingCal = Math.max(0, GOALS.calories - tally.calories);
   const remainingProtein = Math.max(0, GOALS.protein - tally.protein);
 
-  const allSnacks = [...RECIPES.filter(r => r.category === "snack"), ...CUSTOM_SNACKS];
+  const allSnacks = [...allActiveRecipes().filter(r => r.category === "snack"), ...CUSTOM_SNACKS];
   const fitting = allSnacks
     .filter(s => typeof s.calories === "number" && s.calories <= remainingCal + 40)
     .sort((a, b) => b.protein - a.protein);
 
   const snackThumb = (s) => s.isCustomSnack
     ? `<div class="stat-thumb emoji-thumb">🍎</div>`
-    : `<div class="stat-thumb" style="background-image:url('assets/${s.image}')"></div>`;
+    : `<div class="stat-thumb" style="background-image:url('${recipeImageUrl(s)}')"></div>`;
 
   const suggestionHTML = fitting.length
     ? fitting.map(s => `
@@ -1494,6 +1644,146 @@ function renderRewards() {
   });
 }
 
+// ---------- Recipe Editor (new custom recipe, new version, or edit custom) ----------
+let editorContext = null; // { mode: 'new-version'|'edit-custom'|'new-custom', baseId, prefill }
+let editorPhotoDataUrl = null;
+
+function compressAndPreviewPhoto(file, previewEl, onDone) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 800;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.72);
+      if (previewEl) previewEl.style.backgroundImage = `url('${dataUrl}')`;
+      onDone(dataUrl);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderEditor() {
+  if (!editorContext) { location.hash = "#/"; return; }
+  const { mode, prefill } = editorContext;
+  const p = prefill || {};
+  editorPhotoDataUrl = null;
+
+  const titleText = mode === "new-custom" ? "Add a Recipe" : mode === "new-version" ? "Edit Recipe (New Version)" : "Edit Recipe";
+  const catOptions = DECIDE_CATEGORIES.map(c => `<option value="${c}" ${p.category === c ? "selected" : ""}>${CATEGORY_LABELS[c]}</option>`).join("");
+
+  app.innerHTML = `
+    <header class="topbar">
+      <button class="back-btn" onclick="history.back()">${BACK_SVG}</button>
+      <div class="wordmark">${titleText}</div>
+    </header>
+    <div class="detail">
+      <div class="editor-photo" id="editor-photo" style="${p.image ? `background-image:url('${recipeImageUrl(p)}')` : ""}">
+        <label class="editor-photo-label">
+          📷 ${p.image ? "Change Photo" : "Add Photo"}
+          <input type="file" accept="image/*" id="editor-photo-input" style="display:none">
+        </label>
+      </div>
+
+      <div class="add-form">
+        <input type="text" id="ed-title" placeholder="Recipe name" value="${(p.title || "").replace(/"/g, "&quot;")}">
+        <select id="ed-category">${catOptions}</select>
+
+        <div class="form-grid-4">
+          <input type="number" id="ed-calories" placeholder="Calories" value="${p.calories ?? ""}" inputmode="numeric">
+          <input type="number" id="ed-protein" placeholder="Protein g" value="${p.protein ?? ""}" inputmode="numeric">
+          <input type="number" id="ed-carbs" placeholder="Carbs g" value="${p.carbs ?? ""}" inputmode="numeric">
+          <input type="number" id="ed-fat" placeholder="Fat g" value="${p.fat ?? ""}" inputmode="numeric">
+        </div>
+        <input type="number" id="ed-fiber" placeholder="Fiber g" value="${p.fiber ?? ""}" inputmode="numeric">
+
+        <div class="form-grid-4">
+          <input type="text" id="ed-servings" placeholder="Servings" value="${p.servings || ""}">
+          <input type="text" id="ed-prep-time" placeholder="Prep time" value="${p.prep_time || ""}">
+          <input type="number" id="ed-difficulty" placeholder="Difficulty 1-5" value="${p.difficulty ?? ""}" inputmode="numeric">
+          <input type="number" id="ed-dishes" placeholder="Dishes 1-5" value="${p.dishes ?? ""}" inputmode="numeric">
+        </div>
+
+        <label class="ed-label">Ingredients (one per line)</label>
+        <textarea id="ed-ingredients" rows="5" placeholder="200g Greek yogurt&#10;1 tbsp honey">${(p.ingredients || []).join("\n")}</textarea>
+
+        <label class="ed-label">Method (one step per line)</label>
+        <textarea id="ed-method" rows="5" placeholder="Mix everything together.&#10;Serve chilled.">${(p.method || []).join("\n")}</textarea>
+
+        <label class="ed-label">Notes (one per line, optional)</label>
+        <textarea id="ed-notes" rows="3">${(p.notes || []).join("\n")}</textarea>
+
+        <input type="text" id="ed-tags" placeholder="Tags, comma separated" value="${(p.tags || []).join(", ")}">
+
+        <label class="ed-checkbox"><input type="checkbox" id="ed-freezer" ${p.freezer_friendly ? "checked" : ""}> Freezer friendly</label>
+        <label class="ed-checkbox"><input type="checkbox" id="ed-mealprep" ${p.meal_prep_friendly ? "checked" : ""}> Meal prep friendly</label>
+      </div>
+
+      <button class="primary-btn" id="save-editor-btn" style="width:100%;margin-top:16px">Save Recipe</button>
+    </div>
+  `;
+
+  document.getElementById("editor-photo-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    compressAndPreviewPhoto(file, document.getElementById("editor-photo"), (dataUrl) => {
+      editorPhotoDataUrl = dataUrl;
+    });
+  });
+
+  document.getElementById("save-editor-btn").addEventListener("click", () => {
+    const title = document.getElementById("ed-title").value.trim();
+    if (!title) { alert("Give it a name first!"); return; }
+
+    const fields = {
+      title,
+      category: document.getElementById("ed-category").value,
+      calories: Number(document.getElementById("ed-calories").value) || 0,
+      protein: Number(document.getElementById("ed-protein").value) || 0,
+      carbs: Number(document.getElementById("ed-carbs").value) || 0,
+      fat: Number(document.getElementById("ed-fat").value) || 0,
+      fiber: Number(document.getElementById("ed-fiber").value) || 0,
+      servings: document.getElementById("ed-servings").value.trim() || "1",
+      prep_time: document.getElementById("ed-prep-time").value.trim() || "—",
+      total_time: document.getElementById("ed-prep-time").value.trim() || "—",
+      difficulty: Number(document.getElementById("ed-difficulty").value) || 1,
+      dishes: Number(document.getElementById("ed-dishes").value) || 1,
+      image: editorPhotoDataUrl || p.image || "",
+      ingredients: document.getElementById("ed-ingredients").value.split("\n").map(s => s.trim()).filter(Boolean),
+      method: document.getElementById("ed-method").value.split("\n").map(s => s.trim()).filter(Boolean),
+      notes: document.getElementById("ed-notes").value.split("\n").map(s => s.trim()).filter(Boolean),
+      tags: document.getElementById("ed-tags").value.split(",").map(s => s.trim()).filter(Boolean),
+      freezer_friendly: document.getElementById("ed-freezer").checked,
+      meal_prep_friendly: document.getElementById("ed-mealprep").checked,
+    };
+
+    if (mode === "new-version") {
+      const newVersionId = addRecipeVersion(editorContext.baseId, fields);
+      showGoobertToast("New version saved! 📝");
+      location.hash = "#/recipe/" + editorContext.baseId;
+      // ensure the new (non-default) version is what's shown after navigating
+      setTimeout(() => renderDetail(editorContext.baseId, newVersionId), 0);
+    } else if (mode === "edit-custom") {
+      updateCustomRecipe(editorContext.baseId, fields);
+      showGoobertToast("Recipe updated! 📝");
+      location.hash = "#/recipe/" + editorContext.baseId;
+    } else {
+      const newId = addCustomRecipe(fields);
+      showGoobertToast("Recipe added! 🎉");
+      location.hash = "#/recipe/" + newId;
+    }
+    editorContext = null;
+  });
+}
+
 function router() {
   const hash = location.hash || "#/";
   const recipeMatch = hash.match(/^#\/recipe\/(.+)$/);
@@ -1505,6 +1795,7 @@ function router() {
   if (hash === "#/snacks") { renderSnackCorner(); return; }
   if (hash === "#/achievements") { renderAchievements(); return; }
   if (hash === "#/rewards") { renderRewards(); return; }
+  if (hash === "#/editor") { renderEditor(); return; }
   renderLibrary();
 }
 
