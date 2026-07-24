@@ -1,4 +1,4 @@
-const APP_VERSION = "2.9";
+const APP_VERSION = "3.1";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
