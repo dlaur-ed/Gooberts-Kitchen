@@ -358,5 +358,1025 @@
     ],
     "freezer_friendly": false,
     "meal_prep_friendly": false
+  },
+  {
+    "id": "D03",
+    "category": "dinner",
+    "title": "Chicken Wraps",
+    "calories": 680,
+    "protein": 86,
+    "carbs": 33,
+    "fat": 12,
+    "fiber": 24,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d03_chicken_wraps.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "1 More Protein Wrap",
+      "300 g frozen mixed vegetables",
+      "30 g light sauce",
+      "oil spray",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and pan-fry the chicken breast fillet until cooked through, then slice.",
+      "Pan-fry or steam the frozen vegetables until tender.",
+      "Warm the protein wrap.",
+      "Fill with chicken, vegetables and light sauce, then roll up.",
+      "Serve with the FIZI on the side."
+    ],
+    "notes": [
+      "Macros are per-ingredient estimates from the original source, not a lab analysis."
+    ],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D04",
+    "category": "dinner",
+    "title": "Chicken Fajita Quesadilla",
+    "calories": 660,
+    "protein": 90,
+    "carbs": 32,
+    "fat": 16,
+    "fiber": 24,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d04_chicken_fajita_quesadilla.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "300 g bell pepper & onion mix",
+      "1 More Protein Wrap",
+      "30 g shredded cheddar",
+      "oil spray",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Saut\u00e9 the pepper-onion mix until softened.",
+      "Lay the wrap flat, and cover one half with chicken, vegetables and shredded cheddar.",
+      "Fold and toast in a dry pan until golden and the cheese melts.",
+      "Slice and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D05",
+    "category": "dinner",
+    "title": "Chicken Pizza Wrap",
+    "calories": 660,
+    "protein": 81,
+    "carbs": 37,
+    "fat": 11,
+    "fiber": 20,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d05_chicken_pizza_wrap.png",
+    "ingredients": [
+      "1 More Protein Wrap",
+      "250 g chicken breast fillet",
+      "100 g passata",
+      "30 g light mozzarella",
+      "50 g bell pepper",
+      "50 g sweetcorn",
+      "oil spray",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the chicken and slice or shred it.",
+      "Spread the passata over the wrap.",
+      "Top with chicken, mozzarella, bell pepper and sweetcorn.",
+      "Fold or roll, then warm in a pan or oven until the cheese melts.",
+      "Serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D06",
+    "category": "dinner",
+    "title": "Chicken Parmesan Pasta",
+    "calories": 665,
+    "protein": 87,
+    "carbs": 35,
+    "fat": 10,
+    "fiber": 11,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d06_chicken_parmesan_pasta.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "50 g protein pasta (dry)",
+      "100 g passata",
+      "20 g parmesan",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the protein pasta according to the package directions.",
+      "Season and pan-fry the chicken until cooked through, then slice.",
+      "Warm the passata in a pan.",
+      "Toss the pasta with the passata and chicken.",
+      "Top with parmesan and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D07",
+    "category": "dinner",
+    "title": "Loaded Chicken Fries Bowl",
+    "calories": 668,
+    "protein": 78,
+    "carbs": 32,
+    "fat": 13,
+    "fiber": 13,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d07_loaded_chicken_fries_bowl.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "150 g frozen oven fries",
+      "50 g bell pepper",
+      "20 g cheddar",
+      "light sauce",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Bake the frozen oven fries according to the package directions.",
+      "Saut\u00e9 the bell pepper until tender.",
+      "Build the bowl: fries on the bottom, then chicken, bell pepper and cheddar.",
+      "Drizzle with light sauce and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [
+      "gluten-free"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D08",
+    "category": "dinner",
+    "title": "Loaded Sweet Potato Chicken Bowl",
+    "calories": 668,
+    "protein": 78,
+    "carbs": 43,
+    "fat": 13,
+    "fiber": 16,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d08_loaded_sweet_potato_chicken_bowl.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "200 g sweet potato fries (air fryer or oven)",
+      "50 g bell pepper",
+      "20 g cheddar",
+      "light sauce",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Air-fry or oven-bake the sweet potato fries until crisp.",
+      "Saut\u00e9 the bell pepper until tender.",
+      "Build the bowl: sweet potato fries on the bottom, then chicken, bell pepper and cheddar.",
+      "Drizzle with light sauce and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [
+      "gluten-free"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D09",
+    "category": "dinner",
+    "title": "Chicken Caesar Salad",
+    "calories": 663,
+    "protein": 88,
+    "carbs": 28,
+    "fat": 16,
+    "fiber": 18,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d09_chicken_caesar_salad.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "200 g romaine lettuce",
+      "100 g cucumber",
+      "100 g tomatoes",
+      "20 g parmesan",
+      "50 g More Caesar cheese sauce",
+      "1/2 More Protein Wrap, torn into croutons",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Toast the torn wrap pieces in a dry pan until crisp, to make croutons.",
+      "Toss the romaine, cucumber and tomatoes in a large bowl.",
+      "Top with chicken, croutons and parmesan.",
+      "Drizzle with the Caesar cheese sauce and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D10",
+    "category": "dinner",
+    "title": "Chicken Cheddar Melt",
+    "calories": 690,
+    "protein": 82,
+    "carbs": 43,
+    "fat": 17,
+    "fiber": 15,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d10_chicken_cheddar_melt.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "2 slices Sammy's toast bread",
+      "1 slice Kerrygold cheddar",
+      "lettuce, sweetcorn, pickles",
+      "20 g burger sauce",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Toast the bread.",
+      "Layer chicken, cheddar, lettuce, sweetcorn and pickles between the toast.",
+      "Spread with the burger sauce.",
+      "Serve warm."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D11",
+    "category": "dinner",
+    "title": "Chicken Mac & Cheese",
+    "calories": 693,
+    "protein": 90,
+    "carbs": 34,
+    "fat": 11,
+    "fiber": 14,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d11_chicken_mac_and_cheese.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "50 g pasta (dry)",
+      "20 g light cheddar",
+      "10 g parmesan",
+      "100 ml low-fat milk",
+      "10 g light cream cheese",
+      "spices",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the pasta according to the package directions.",
+      "Season and pan-fry the chicken, then slice.",
+      "In a saucepan, warm the milk with the light cheddar, parmesan and cream cheese, stirring until melted and smooth.",
+      "Toss the pasta and chicken through the cheese sauce.",
+      "Season with spices and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D12",
+    "category": "dinner",
+    "title": "Chicken Alfredo Pasta",
+    "calories": 678,
+    "protein": 84,
+    "carbs": 43,
+    "fat": 14,
+    "fiber": 13,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d12_chicken_alfredo_pasta.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "50 g pasta (dry)",
+      "20 g parmesan",
+      "50 ml light cooking cream",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the pasta according to the package directions.",
+      "Season and pan-fry the chicken, then slice.",
+      "Warm the light cooking cream in a pan and stir in the parmesan until smooth.",
+      "Toss the pasta and chicken through the sauce.",
+      "Serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D13",
+    "category": "dinner",
+    "title": "Chicken Veggie Tomato Pasta",
+    "calories": 739,
+    "protein": 88,
+    "carbs": 40,
+    "fat": 10,
+    "fiber": 9,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d13_chicken_veggie_tomato_pasta.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "50 g pasta (dry)",
+      "250 g frozen mixed vegetables",
+      "200 g passata",
+      "15 ml light cooking cream",
+      "10 g parmesan",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the pasta according to the package directions.",
+      "Season and pan-fry the chicken, then slice.",
+      "Saut\u00e9 the frozen vegetables, then stir in the passata and light cooking cream.",
+      "Toss the pasta and chicken through the sauce.",
+      "Top with parmesan and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D14",
+    "category": "dinner",
+    "title": "Chicken Tomato Tortellini",
+    "calories": 709,
+    "protein": 87,
+    "carbs": 0,
+    "fat": 0,
+    "fiber": 0,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d14_chicken_tomato_tortellini.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "100 g cheese tortellini",
+      "200 g passata",
+      "150 g frozen mixed vegetables",
+      "20 ml light cooking cream",
+      "10 g parmesan"
+    ],
+    "method": [
+      "Cook the tortellini according to the package directions.",
+      "Season and pan-fry the chicken, then slice.",
+      "Saut\u00e9 the frozen vegetables, then stir in the passata and light cooking cream.",
+      "Toss the tortellini and chicken through the sauce.",
+      "Top with parmesan and serve."
+    ],
+    "notes": [
+      "\u26a0\ufe0f Carbs, fat and fiber weren't in the original notes \u2014 needs real numbers."
+    ],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D15",
+    "category": "dinner",
+    "title": "Chicken Vegetable Gratin",
+    "calories": 646,
+    "protein": 90,
+    "carbs": 30,
+    "fat": 14,
+    "fiber": 19,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d15_chicken_vegetable_gratin.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "150 g broccoli",
+      "150 g carrots",
+      "150 g cauliflower",
+      "30 g light cheese",
+      "100 ml light cooking cream",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and pan-fry the chicken, then slice.",
+      "Steam the broccoli, carrots and cauliflower until just tender.",
+      "Layer the chicken and vegetables in an ovenproof dish.",
+      "Pour over the light cooking cream and top with the light cheese.",
+      "Bake until golden and bubbling, then serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [
+      "gluten-free"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D16",
+    "category": "dinner",
+    "title": "Chicken Parmesan",
+    "calories": 635,
+    "protein": 87,
+    "carbs": 0,
+    "fat": 0,
+    "fiber": 0,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d16_chicken_parmesan.png",
+    "ingredients": [
+      "300 g breaded chicken",
+      "100 g passata",
+      "30 g light mozzarella",
+      "20 g parmesan",
+      "150 g broccoli"
+    ],
+    "method": [
+      "Bread and cook the chicken until golden and cooked through.",
+      "Warm the passata in a small pan.",
+      "Top the chicken with passata, mozzarella and parmesan.",
+      "Grill or bake until the cheese melts.",
+      "Serve with steamed broccoli."
+    ],
+    "notes": [
+      "\u26a0\ufe0f Carbs, fat and fiber weren't in the original notes \u2014 needs real numbers."
+    ],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D17",
+    "category": "dinner",
+    "title": "Chicken Potato Gratin",
+    "calories": 720,
+    "protein": 88,
+    "carbs": 35,
+    "fat": 14,
+    "fiber": 0,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d17_chicken_potato_gratin.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "250 g potatoes",
+      "50 ml light cooking cream",
+      "20 g parmesan",
+      "20 g light cheese",
+      "garlic, salt, pepper, nutmeg",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and pan-fry the chicken, then slice.",
+      "Thinly slice the potatoes and layer in an ovenproof dish.",
+      "Pour over the light cooking cream, and season with garlic, salt, pepper and nutmeg.",
+      "Top with parmesan and light cheese.",
+      "Bake until the potatoes are tender and the top is golden, then serve with the chicken."
+    ],
+    "notes": [
+      "\u26a0\ufe0f Fiber wasn't in the original notes \u2014 needs a real number."
+    ],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [
+      "gluten-free"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D18",
+    "category": "dinner",
+    "title": "Chicken Broccoli Gratin",
+    "calories": 638,
+    "protein": 94,
+    "carbs": 20,
+    "fat": 13,
+    "fiber": 0,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d18_chicken_broccoli_gratin.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "300 g broccoli",
+      "50 ml light cooking cream",
+      "20 g parmesan",
+      "30 g light cheese",
+      "garlic, pepper, paprika",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and pan-fry the chicken, then slice.",
+      "Steam the broccoli until just tender.",
+      "Layer the chicken and broccoli in an ovenproof dish.",
+      "Pour over the light cooking cream, season with garlic, pepper and paprika, and top with parmesan and light cheese.",
+      "Bake until golden and serve."
+    ],
+    "notes": [
+      "\u26a0\ufe0f Fiber wasn't in the original notes \u2014 needs a real number."
+    ],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [
+      "gluten-free"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D19",
+    "category": "dinner",
+    "title": "Cheeseburger Chicken Wrap",
+    "calories": 663,
+    "protein": 87,
+    "carbs": 28,
+    "fat": 14,
+    "fiber": 20,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d19_cheeseburger_chicken_wrap.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "1 More Protein Wrap",
+      "20 g light cheddar",
+      "30 g light burger sauce",
+      "50 g pickles",
+      "50 g onions",
+      "iceberg lettuce",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Warm the wrap.",
+      "Fill with chicken, cheddar, burger sauce, pickles, onions and lettuce.",
+      "Roll up and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D20",
+    "category": "dinner",
+    "title": "Chicken Philly Cheesesteak Wrap",
+    "calories": 710,
+    "protein": 91,
+    "carbs": 30,
+    "fat": 15,
+    "fiber": 20,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d20_chicken_philly_cheesesteak_wrap.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "1 More Protein Wrap",
+      "100 g bell pepper",
+      "100 g onions",
+      "30 g light cheese",
+      "15 g light mayo",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Saut\u00e9 the bell pepper and onions until softened.",
+      "Warm the wrap and fill with chicken, peppers, onions and light cheese.",
+      "Add a spoon of light mayo.",
+      "Roll up and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D21",
+    "category": "dinner",
+    "title": "Philly Cheesesteak Chicken Sandwich",
+    "calories": 693,
+    "protein": 85,
+    "carbs": 38,
+    "fat": 14,
+    "fiber": 10,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d21_philly_cheesesteak_chicken_sandwich.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "2 slices Sammy's toast bread",
+      "20 g light cheddar",
+      "100 g bell pepper",
+      "100 g onions",
+      "15 g light mayo",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Saut\u00e9 the bell pepper and onions until softened.",
+      "Toast the bread.",
+      "Layer chicken, peppers, onions and light cheddar between the toast, with a spread of light mayo.",
+      "Serve warm."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D22",
+    "category": "dinner",
+    "title": "Chicken Club Guacamole Wrap",
+    "calories": 705,
+    "protein": 88,
+    "carbs": 28,
+    "fat": 18,
+    "fiber": 22,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d22_chicken_club_guacamole_wrap.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "1 More Protein Wrap",
+      "50 g guacamole",
+      "20 g light cheddar",
+      "tomatoes",
+      "lettuce",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Warm the wrap.",
+      "Spread with guacamole, then add chicken, cheddar, tomatoes and lettuce.",
+      "Roll up and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D23",
+    "category": "dinner",
+    "title": "Chicken Guacamole Fries Bowl",
+    "calories": 674,
+    "protein": 82,
+    "carbs": 38,
+    "fat": 18,
+    "fiber": 12,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d23_chicken_guacamole_fries_bowl.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "200 g air fryer fries",
+      "50 g guacamole",
+      "100 g tomatoes",
+      "50 g red onions",
+      "20 g light cheddar",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Air-fry the fries until crisp.",
+      "Build the bowl: fries on the bottom, then chicken, guacamole, tomatoes, red onions and cheddar.",
+      "Serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [
+      "gluten-free"
+    ],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D24",
+    "category": "dinner",
+    "title": "Chicken Quesadilla with Guacamole & Tomatoes",
+    "calories": 715,
+    "protein": 89,
+    "carbs": 33,
+    "fat": 17,
+    "fiber": 20,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d24_chicken_quesadilla_with_guacamole_and_tomatoes.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "1 More Protein Wrap",
+      "20 g light cheddar",
+      "40 g guacamole with tomato chunks",
+      "100 g diced tomatoes",
+      "50 g bell pepper",
+      "25 g onions",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Lay the wrap flat and top one half with chicken, cheddar, bell pepper and onions.",
+      "Fold and toast in a dry pan until golden and the cheese melts.",
+      "Top with guacamole and diced tomatoes.",
+      "Slice and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D25",
+    "category": "dinner",
+    "title": "Lentil Soup with Chicken & Pretzel Roll",
+    "calories": 718,
+    "protein": 76,
+    "carbs": 58,
+    "fat": 9,
+    "fiber": 17,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d25_lentil_soup_with_chicken_and_pretzel_roll.png",
+    "ingredients": [
+      "250 g chicken breast fillet",
+      "400 g lentil soup",
+      "1 small pretzel roll (about 70 g)",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and pan-fry the chicken, then slice.",
+      "Warm the lentil soup in a pot.",
+      "Serve the soup topped with sliced chicken, with the pretzel roll on the side."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D26",
+    "category": "dinner",
+    "title": "Creamy Pesto Chicken Pasta",
+    "calories": 699,
+    "protein": 85,
+    "carbs": 38,
+    "fat": 20,
+    "fiber": 14,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d26_creamy_pesto_chicken_pasta.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "50 g Barilla protein pasta (dry)",
+      "20 g Barilla Pesto Genovese",
+      "20 ml light cooking cream",
+      "10 g parmesan",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the pasta according to the package directions.",
+      "Season and pan-fry the chicken, then slice.",
+      "Warm the light cooking cream in a pan and stir in the pesto and parmesan.",
+      "Toss the pasta and chicken through the sauce.",
+      "Serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D27",
+    "category": "dinner",
+    "title": "Creamy Mushroom Chicken Pasta",
+    "calories": 684,
+    "protein": 91,
+    "carbs": 38,
+    "fat": 16,
+    "fiber": 18,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d27_creamy_mushroom_chicken_pasta.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "50 g Barilla protein pasta (dry)",
+      "150 g mushrooms",
+      "40 ml light cooking cream",
+      "20 g light cream cheese",
+      "10 g parmesan",
+      "garlic, parsley, spices",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Cook the pasta according to the package directions.",
+      "Season and pan-fry the chicken, then slice.",
+      "Saut\u00e9 the mushrooms and garlic until golden.",
+      "Stir in the light cooking cream and cream cheese until smooth, then add the parmesan.",
+      "Toss the pasta and chicken through the sauce, season with parsley, and serve."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
+  },
+  {
+    "id": "D28",
+    "category": "dinner",
+    "title": "Chicken Pesto Melt",
+    "calories": 695,
+    "protein": 87,
+    "carbs": 31,
+    "fat": 17,
+    "fiber": 13,
+    "servings": "1",
+    "prep_time": "~15 min (est.)",
+    "total_time": "~25 min (est.)",
+    "difficulty": 2,
+    "dishes": 2,
+    "image": "d28_chicken_pesto_melt.png",
+    "ingredients": [
+      "300 g chicken breast fillet",
+      "2 slices Sammy's toast bread",
+      "15 g Barilla Pesto Genovese",
+      "20 g light cheddar",
+      "2 tomato slices (about 40 g)",
+      "arugula or spinach",
+      "1 can FIZI"
+    ],
+    "method": [
+      "Season and cook the chicken, then slice.",
+      "Toast the bread.",
+      "Spread with pesto, then layer chicken, cheddar, tomato slices and arugula or spinach between the toast.",
+      "Serve warm."
+    ],
+    "notes": [],
+    "tags": [
+      "High Protein"
+    ],
+    "dietary_tags": [],
+    "freezer_friendly": false,
+    "meal_prep_friendly": true
   }
 ]
