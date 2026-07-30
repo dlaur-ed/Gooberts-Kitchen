@@ -1,4 +1,4 @@
-const APP_VERSION = "3.1";
+const APP_VERSION = "3.2";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -837,7 +837,7 @@ function renderLibrary() {
 
     <div class="goobert-corner">
       <div class="goobert-mascot-wrap">
-        <img src="assets/baby_goobert.png" class="goobert-mascot-img" id="goobert-mascot" alt="Baby Goobert" />
+        <div class="goobert-mascot-img" id="goobert-mascot" role="button" tabindex="0" aria-label="Baby Goobert"></div>
         <div class="speech-bubble" id="goobert-bubble"></div>
       </div>
       <div class="goobert-corner-links">
@@ -853,15 +853,19 @@ function renderLibrary() {
   const mascotEl = document.getElementById("goobert-mascot");
   const bubbleEl = document.getElementById("goobert-bubble");
   if (mascotEl && bubbleEl) {
-    mascotEl.addEventListener("click", () => {
-      mascotEl.classList.remove("bounce");
+    const triggerWave = () => {
+      mascotEl.classList.remove("waving");
       void mascotEl.offsetWidth; // restart animation even on repeated taps
-      mascotEl.classList.add("bounce");
+      mascotEl.classList.add("waving");
       bubbleEl.textContent = pickGoobertLine(GOOBERT_TAP_LINES, "tap");
       bubbleEl.classList.add("show");
       setTimeout(() => bubbleEl.classList.remove("show"), 2000);
       incrementMascotTaps();
       refreshAchievements().forEach(a => showGoobertToast(`🏆 Achievement unlocked: ${a.name}!`));
+    };
+    mascotEl.addEventListener("click", triggerWave);
+    mascotEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); triggerWave(); }
     });
   }
 
