@@ -704,17 +704,17 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 .goobert-mascot-wrap { position: relative; }
 .goobert-mascot-img {
   width: 84px;
-  height: 49px;
-  background-image: url('assets/baby_goobert_wave_sprite.png');
+  height: 42px;
+  background-image: url('assets/baby_goobert_wave_sprite_small.png');
   background-repeat: no-repeat;
-  background-size: 756px 49px; /* 9 frames × 84px display width */
   background-position: 0 0;
   cursor: pointer;
   animation: goobert-idle-tilt 3.4s ease-in-out infinite;
   transform-origin: 50% 90%;
 }
 .goobert-mascot-img.waving {
-  animation: goobert-idle-tilt 3.4s ease-in-out infinite, goobert-wave-frames 1.125s steps(8) 1 forwards;
+  animation: goobert-wave-frames 1.125s steps(8) 1 forwards;
+  transform: none; /* pause the idle tilt while waving so only one motion plays at a time */
 }
 @keyframes goobert-idle-tilt {
   0%, 100% { transform: rotate(-2deg); }

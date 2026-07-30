@@ -1,4 +1,4 @@
-const APP_VERSION = "3.2";
+const APP_VERSION = "3.2.2";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -857,6 +857,7 @@ function renderLibrary() {
       mascotEl.classList.remove("waving");
       void mascotEl.offsetWidth; // restart animation even on repeated taps
       mascotEl.classList.add("waving");
+      setTimeout(() => mascotEl.classList.remove("waving"), 1150); // let the idle tilt resume after the wave finishes
       bubbleEl.textContent = pickGoobertLine(GOOBERT_TAP_LINES, "tap");
       bubbleEl.classList.add("show");
       setTimeout(() => bubbleEl.classList.remove("show"), 2000);

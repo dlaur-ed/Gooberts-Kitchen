@@ -1,4 +1,4 @@
-const CACHE_NAME = "goobert-kitchen-app-v18";
+const CACHE_NAME = "goobert-kitchen-app-v20";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -11,7 +11,7 @@ const APP_SHELL = [
   "./icons/icon-192-maskable.png",
   "./icons/icon-512-maskable.png",
   "./assets/baby_goobert.png",
-  "./assets/baby_goobert_wave_sprite.png",
+  "./assets/baby_goobert_wave_sprite_small.png",
   "./assets/leaf_branch.png",
   "./assets/uranium_bowl.png",
   "./assets/choc_protein_mug_cake.png",
