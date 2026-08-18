@@ -1,4 +1,4 @@
-const APP_VERSION = "3.5";
+const APP_VERSION = "3.6";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -1582,7 +1582,7 @@ function renderSnackCorner() {
   const remainingCal = Math.max(0, GOALS.calories - tally.calories);
   const remainingProtein = Math.max(0, GOALS.protein - tally.protein);
 
-  const allSnacks = [...allActiveRecipes().filter(r => r.category === "snack"), ...CUSTOM_SNACKS];
+  const allSnacks = [...allActiveRecipes().filter(r => r.category === "snack" || r.category === "treat"), ...CUSTOM_SNACKS];
   const fitting = allSnacks
     .filter(s => typeof s.calories === "number" && s.calories <= remainingCal + 40)
     .sort((a, b) => b.protein - a.protein);
@@ -1596,7 +1596,7 @@ function renderSnackCorner() {
         <div class="snack-suggest-row">
           ${snackThumb(s)}
           <div class="stat-row-info">
-            <p class="stat-row-title">${s.title}</p>
+            <p class="stat-row-title">${s.title} ${s.category === "treat" ? '<span class="mini-tag treat">Treat</span>' : ""}</p>
             <p class="stat-row-sub">${s.calories} kcal · ${s.protein}g protein</p>
           </div>
           <button class="snack-eat-btn" data-snack="${s.id}">I ate this</button>

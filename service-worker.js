@@ -1,4 +1,4 @@
-const CACHE_NAME = "goobert-kitchen-app-v24";
+const CACHE_NAME = "goobert-kitchen-app-v25";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -29,7 +29,6 @@ const APP_SHELL = [
   "./assets/b16_beans_potato_brunch_bowl.jpg",
   "./assets/b17_banana_split_yogurt_bowl.jpg",
   "./assets/b18_baked_beans_with_pretzel_stick.jpg",
-  "./assets/choc_protein_mug_cake.png",
   "./assets/cottage_cheese_berries.png",
   "./assets/d03_chicken_wraps.jpg",
   "./assets/d04_chicken_fajita_quesadilla.jpg",
@@ -58,9 +57,7 @@ const APP_SHELL = [
   "./assets/d27_creamy_mushroom_chicken_pasta.jpg",
   "./assets/d28_chicken_pesto_melt.jpg",
   "./assets/greek_yogurt_bowl.png",
-  "./assets/hummus_veggie_sticks.png",
   "./assets/lemon_chicken_rice.png",
-  "./assets/overnight_oats_pb.png",
   "./assets/s03_protein_iced_coffee.jpg",
   "./assets/s04_protein_iced_mocha.jpg",
   "./assets/s05_protein_iced_chocolate_milk.jpg",
@@ -80,8 +77,7 @@ const APP_SHELL = [
   "./assets/t15_popcorn.jpg",
   "./assets/t16_ahead_low_sugar_gummies.jpg",
   "./assets/t17_paprika_chips.jpg",
-  "./assets/t18_mixed_nuts.jpg",
-  "./assets/turkey_chili.png"
+  "./assets/t18_mixed_nuts.jpg"
 ];
 
 self.addEventListener("install", (event) => {
