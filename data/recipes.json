@@ -1,181 +1,7 @@
 [
   {
-    "id": "B01",
-    "category": "breakfast",
-    "title": "Greek Yogurt Protein Bowl",
-    "calories": 405,
-    "protein": 30,
-    "carbs": 42,
-    "fat": 10,
-    "fiber": 8,
-    "servings": "1",
-    "prep_time": "10 min",
-    "total_time": "10 min",
-    "difficulty": 1,
-    "dishes": 1,
-    "image": "greek_yogurt_bowl.png",
-    "ingredients": [
-      "200 g Greek yogurt (2%)",
-      "40 g rolled oats",
-      "1 tbsp honey",
-      "1/2 banana",
-      "50 g blueberries",
-      "1 tbsp almond butter",
-      "1 tsp chia seeds"
-    ],
-    "method": [
-      "Add Greek yogurt to a bowl.",
-      "Top with oats, banana, blueberries and chia seeds.",
-      "Drizzle honey and almond butter on top.",
-      "Enjoy!"
-    ],
-    "notes": [
-      "Use any berries you have.",
-      "Add a scoop of protein powder for extra protein.",
-      "Great for busy mornings!"
-    ],
-    "tags": [
-      "Early Morning Friendly",
-      "Meal Prep"
-    ],
-    "dietary_tags": [
-      "vegetarian",
-      "gluten-free"
-    ],
-    "freezer_friendly": false,
-    "meal_prep_friendly": true
-  },
-  {
-    "id": "S01",
-    "category": "snack",
-    "title": "Cottage Cheese & Berries",
-    "calories": 210,
-    "protein": 17,
-    "carbs": 18,
-    "fat": 6,
-    "fiber": 5,
-    "servings": "1",
-    "prep_time": "5 min",
-    "total_time": "5 min",
-    "difficulty": 1,
-    "dishes": 1,
-    "image": "cottage_cheese_berries.png",
-    "ingredients": [
-      "150 g cottage cheese",
-      "100 g mixed berries",
-      "1 tsp honey",
-      "10 g chopped almonds"
-    ],
-    "method": [
-      "Add cottage cheese to a bowl.",
-      "Top with berries, honey and almonds.",
-      "Enjoy!"
-    ],
-    "notes": [
-      "High protein and refreshing.",
-      "Swap berries for banana or apple.",
-      "Add cinnamon if you like!"
-    ],
-    "tags": [
-      "Under 15 Minutes",
-      "High Protein"
-    ],
-    "dietary_tags": [
-      "vegetarian",
-      "gluten-free"
-    ],
-    "freezer_friendly": false,
-    "meal_prep_friendly": false
-  },
-  {
-    "id": "D01",
-    "category": "dinner",
-    "title": "Lemon Garlic Chicken & Rice",
-    "calories": 730,
-    "protein": 46,
-    "carbs": 72,
-    "fat": 20,
-    "fiber": 7,
-    "servings": "2",
-    "prep_time": "30 min",
-    "total_time": "35 min",
-    "difficulty": 2,
-    "dishes": 2,
-    "image": "lemon_chicken_rice.png",
-    "ingredients": [
-      "150 g chicken breast",
-      "60 g dry rice",
-      "150 g broccoli",
-      "1 tbsp olive oil",
-      "2 garlic cloves",
-      "Juice of 1/2 lemon",
-      "Salt, pepper, herbs"
-    ],
-    "method": [
-      "Cook rice according to package directions.",
-      "Season chicken with salt, pepper and herbs. Cook in olive oil until golden and cooked through.",
-      "Saut\u00e9 garlic, add broccoli and cook until tender.",
-      "Add lemon juice, toss everything together and serve."
-    ],
-    "notes": [
-      "Meal prep friendly.",
-      "Store in the fridge up to 3 days.",
-      "Swap chicken for salmon or tofu."
-    ],
-    "tags": [
-      "Meal Prep",
-      "Leftover Friendly",
-      "High Protein"
-    ],
-    "dietary_tags": [
-      "dairy-free",
-      "gluten-free"
-    ],
-    "freezer_friendly": false,
-    "meal_prep_friendly": true
-  },
-  {
-    "id": "T01",
-    "category": "treat",
-    "title": "Berry Cheesecake Cup",
-    "calories": 225,
-    "protein": 12,
-    "carbs": 29,
-    "fat": 8,
-    "fiber": 4,
-    "servings": "1",
-    "prep_time": "8 min",
-    "total_time": "8 min",
-    "difficulty": 1,
-    "dishes": 1,
-    "image": "cottage_cheese_berries.png",
-    "ingredients": [
-      "150 g vanilla skyr",
-      "80 g mixed berries",
-      "15 g crushed biscuits",
-      "1 tsp honey"
-    ],
-    "method": [
-      "Spoon the skyr into a small glass or bowl.",
-      "Add berries and crushed biscuits.",
-      "Drizzle with honey and serve."
-    ],
-    "notes": [
-      "A sweet treat that still has some protein.",
-      "Use any berries you like."
-    ],
-    "tags": [
-      "Sweet Treat",
-      "Under 15 Minutes"
-    ],
-    "dietary_tags": [
-      "vegetarian"
-    ],
-    "freezer_friendly": false,
-    "meal_prep_friendly": false
-  },
-  {
     "id": "D03",
+    "card_id": "D01",
     "category": "dinner",
     "title": "Chicken Wraps",
     "calories": 680,
@@ -216,6 +42,7 @@
   },
   {
     "id": "D04",
+    "card_id": "D02",
     "category": "dinner",
     "title": "Chicken Fajita Quesadilla",
     "calories": 660,
@@ -254,6 +81,7 @@
   },
   {
     "id": "D05",
+    "card_id": "D03",
     "category": "dinner",
     "title": "Chicken Pizza Wrap",
     "calories": 660,
@@ -294,6 +122,7 @@
   },
   {
     "id": "D06",
+    "card_id": "D04",
     "category": "dinner",
     "title": "Chicken Parmesan Pasta",
     "calories": 665,
@@ -331,6 +160,7 @@
   },
   {
     "id": "D07",
+    "card_id": "D05",
     "category": "dinner",
     "title": "Loaded Chicken Fries Bowl",
     "calories": 668,
@@ -371,6 +201,7 @@
   },
   {
     "id": "D08",
+    "card_id": "D06",
     "category": "dinner",
     "title": "Loaded Sweet Potato Chicken Bowl",
     "calories": 668,
@@ -411,6 +242,7 @@
   },
   {
     "id": "D09",
+    "card_id": "D07",
     "category": "dinner",
     "title": "Chicken Caesar Salad",
     "calories": 663,
@@ -451,6 +283,7 @@
   },
   {
     "id": "D10",
+    "card_id": "D08",
     "category": "dinner",
     "title": "Chicken Cheddar Melt",
     "calories": 690,
@@ -489,6 +322,7 @@
   },
   {
     "id": "D11",
+    "card_id": "D09",
     "category": "dinner",
     "title": "Chicken Mac & Cheese",
     "calories": 693,
@@ -529,6 +363,7 @@
   },
   {
     "id": "D12",
+    "card_id": "D10",
     "category": "dinner",
     "title": "Chicken Alfredo Pasta",
     "calories": 678,
@@ -566,6 +401,7 @@
   },
   {
     "id": "D13",
+    "card_id": "D11",
     "category": "dinner",
     "title": "Chicken Veggie Tomato Pasta",
     "calories": 739,
@@ -605,6 +441,7 @@
   },
   {
     "id": "D14",
+    "card_id": "D12",
     "category": "dinner",
     "title": "Chicken Tomato Tortellini",
     "calories": 709,
@@ -645,6 +482,7 @@
   },
   {
     "id": "D15",
+    "card_id": "D13",
     "category": "dinner",
     "title": "Chicken Vegetable Gratin",
     "calories": 646,
@@ -686,6 +524,7 @@
   },
   {
     "id": "D16",
+    "card_id": "D14",
     "category": "dinner",
     "title": "Chicken Parmesan",
     "calories": 635,
@@ -725,6 +564,7 @@
   },
   {
     "id": "D17",
+    "card_id": "D15",
     "category": "dinner",
     "title": "Chicken Potato Gratin",
     "calories": 720,
@@ -768,6 +608,7 @@
   },
   {
     "id": "D18",
+    "card_id": "D16",
     "category": "dinner",
     "title": "Chicken Broccoli Gratin",
     "calories": 638,
@@ -811,6 +652,7 @@
   },
   {
     "id": "D19",
+    "card_id": "D17",
     "category": "dinner",
     "title": "Cheeseburger Chicken Wrap",
     "calories": 663,
@@ -850,6 +692,7 @@
   },
   {
     "id": "D20",
+    "card_id": "D18",
     "category": "dinner",
     "title": "Chicken Philly Cheesesteak Wrap",
     "calories": 710,
@@ -889,6 +732,7 @@
   },
   {
     "id": "D21",
+    "card_id": "D19",
     "category": "dinner",
     "title": "Philly Cheesesteak Chicken Sandwich",
     "calories": 693,
@@ -928,6 +772,7 @@
   },
   {
     "id": "D22",
+    "card_id": "D20",
     "category": "dinner",
     "title": "Chicken Club Guacamole Wrap",
     "calories": 705,
@@ -966,6 +811,7 @@
   },
   {
     "id": "D23",
+    "card_id": "D21",
     "category": "dinner",
     "title": "Chicken Guacamole Fries Bowl",
     "calories": 674,
@@ -1006,6 +852,7 @@
   },
   {
     "id": "D24",
+    "card_id": "D22",
     "category": "dinner",
     "title": "Chicken Quesadilla with Guacamole & Tomatoes",
     "calories": 715,
@@ -1046,6 +893,7 @@
   },
   {
     "id": "D25",
+    "card_id": "D23",
     "category": "dinner",
     "title": "Lentil Soup with Chicken & Pretzel Roll",
     "calories": 718,
@@ -1080,6 +928,7 @@
   },
   {
     "id": "D26",
+    "card_id": "D24",
     "category": "dinner",
     "title": "Creamy Pesto Chicken Pasta",
     "calories": 699,
@@ -1118,6 +967,7 @@
   },
   {
     "id": "D27",
+    "card_id": "D25",
     "category": "dinner",
     "title": "Creamy Mushroom Chicken Pasta",
     "calories": 684,
@@ -1158,6 +1008,7 @@
   },
   {
     "id": "D28",
+    "card_id": "D26",
     "category": "dinner",
     "title": "Chicken Pesto Melt",
     "calories": 695,
@@ -1196,6 +1047,7 @@
   },
   {
     "id": "B03",
+    "card_id": "B01",
     "category": "breakfast",
     "title": "Protein Porridge with Banana and Chocolate Chunks",
     "calories": 325,
@@ -1234,6 +1086,7 @@
   },
   {
     "id": "B04",
+    "card_id": "B02",
     "category": "breakfast",
     "title": "Protein Porridge with Banana, Strawberries and Chocolate Chunks",
     "calories": 323,
@@ -1273,6 +1126,7 @@
   },
   {
     "id": "B05",
+    "card_id": "B03",
     "category": "breakfast",
     "title": "Protein Porridge with Blueberries and Chocolate Chunks",
     "calories": 323,
@@ -1311,6 +1165,7 @@
   },
   {
     "id": "B06",
+    "card_id": "B04",
     "category": "breakfast",
     "title": "Protein Porridge with Strawberry and Chocolate Chunks",
     "calories": 312,
@@ -1349,6 +1204,7 @@
   },
   {
     "id": "B07",
+    "card_id": "B05",
     "category": "breakfast",
     "title": "Brownie Baked Oats",
     "calories": 257,
@@ -1389,6 +1245,7 @@
   },
   {
     "id": "B08",
+    "card_id": "B06",
     "category": "breakfast",
     "title": "Blueberry Muffin Overnight Oats",
     "calories": 257,
@@ -1430,6 +1287,7 @@
   },
   {
     "id": "B09",
+    "card_id": "B07",
     "category": "breakfast",
     "title": "Banana Bread Baked Oats",
     "calories": 280,
@@ -1471,6 +1329,7 @@
   },
   {
     "id": "B10",
+    "card_id": "B08",
     "category": "breakfast",
     "title": "Strawberry Banana Overnight Oats",
     "calories": 266,
@@ -1513,6 +1372,7 @@
   },
   {
     "id": "B11",
+    "card_id": "B09",
     "category": "breakfast",
     "title": "Baked Beans with Toast and Eggs",
     "calories": 326,
@@ -1547,6 +1407,7 @@
   },
   {
     "id": "B12",
+    "card_id": "B10",
     "category": "breakfast",
     "title": "Crisp Bread with Cucumber and Eggs",
     "calories": 255,
@@ -1584,6 +1445,7 @@
   },
   {
     "id": "B13",
+    "card_id": "B11",
     "category": "breakfast",
     "title": "Baked Beans and Toast",
     "calories": 256,
@@ -1616,6 +1478,7 @@
   },
   {
     "id": "B14",
+    "card_id": "B12",
     "category": "breakfast",
     "title": "Grilled Cheese Light",
     "calories": 250,
@@ -1651,6 +1514,7 @@
   },
   {
     "id": "B15",
+    "card_id": "B13",
     "category": "breakfast",
     "title": "Cheesy Beans on Toast",
     "calories": 296,
@@ -1687,6 +1551,7 @@
   },
   {
     "id": "B16",
+    "card_id": "B14",
     "category": "breakfast",
     "title": "Beans Potato Brunch Bowl",
     "calories": 273,
@@ -1724,6 +1589,7 @@
   },
   {
     "id": "B17",
+    "card_id": "B15",
     "category": "breakfast",
     "title": "Banana Split Yogurt Bowl",
     "calories": 249,
@@ -1759,6 +1625,7 @@
   },
   {
     "id": "B18",
+    "card_id": "B16",
     "category": "breakfast",
     "title": "Baked Beans with Pretzel Stick",
     "calories": 298,
@@ -1792,6 +1659,7 @@
   },
   {
     "id": "S03",
+    "card_id": "S01",
     "category": "snack",
     "title": "Protein Iced Coffee",
     "calories": 295,
@@ -1831,6 +1699,7 @@
   },
   {
     "id": "S04",
+    "card_id": "S02",
     "category": "snack",
     "title": "Protein Iced Mocha",
     "calories": 295,
@@ -1870,6 +1739,7 @@
   },
   {
     "id": "S05",
+    "card_id": "S03",
     "category": "snack",
     "title": "Protein Iced Chocolate Milk",
     "calories": 295,
@@ -1909,6 +1779,7 @@
   },
   {
     "id": "S06",
+    "card_id": "S04",
     "category": "snack",
     "title": "Protein Nachos Western Style",
     "calories": 130,
@@ -1941,6 +1812,7 @@
   },
   {
     "id": "T03",
+    "card_id": "T01",
     "category": "treat",
     "title": "Kinder Cards",
     "calories": 128,
@@ -1972,6 +1844,7 @@
   },
   {
     "id": "T04",
+    "card_id": "T02",
     "category": "treat",
     "title": "Kinder Penguin",
     "calories": 135,
@@ -2003,6 +1876,7 @@
   },
   {
     "id": "T05",
+    "card_id": "T03",
     "category": "treat",
     "title": "Kinder Bueno",
     "calories": 122,
@@ -2034,6 +1908,7 @@
   },
   {
     "id": "T06",
+    "card_id": "T04",
     "category": "treat",
     "title": "Kinder Schokobons",
     "calories": 115,
@@ -2065,6 +1940,7 @@
   },
   {
     "id": "T07",
+    "card_id": "T05",
     "category": "treat",
     "title": "Kitkat",
     "calories": 104,
@@ -2096,6 +1972,7 @@
   },
   {
     "id": "T08",
+    "card_id": "T06",
     "category": "treat",
     "title": "Hanuta",
     "calories": 117,
@@ -2127,6 +2004,7 @@
   },
   {
     "id": "T09",
+    "card_id": "T07",
     "category": "treat",
     "title": "Kinder Riegel",
     "calories": 140,
@@ -2158,6 +2036,7 @@
   },
   {
     "id": "T10",
+    "card_id": "T08",
     "category": "treat",
     "title": "Duplo",
     "calories": 91,
@@ -2189,6 +2068,7 @@
   },
   {
     "id": "T11",
+    "card_id": "T09",
     "category": "treat",
     "title": "Cookie Dough M&Ms",
     "calories": 130,
@@ -2220,6 +2100,7 @@
   },
   {
     "id": "T12",
+    "card_id": "T10",
     "category": "treat",
     "title": "Peanut M&Ms",
     "calories": 90,
@@ -2251,6 +2132,7 @@
   },
   {
     "id": "T13",
+    "card_id": "T11",
     "category": "treat",
     "title": "Roasted Almonds",
     "calories": 120,
@@ -2285,6 +2167,7 @@
   },
   {
     "id": "T14",
+    "card_id": "T12",
     "category": "treat",
     "title": "Kinder Happy Hippos",
     "calories": 112,
@@ -2316,6 +2199,7 @@
   },
   {
     "id": "T15",
+    "card_id": "T13",
     "category": "treat",
     "title": "Popcorn",
     "calories": 105,
@@ -2353,6 +2237,7 @@
   },
   {
     "id": "T16",
+    "card_id": "T14",
     "category": "treat",
     "title": "Ahead Low Sugar Gummies",
     "calories": 80,
@@ -2384,6 +2269,7 @@
   },
   {
     "id": "T17",
+    "card_id": "T15",
     "category": "treat",
     "title": "Paprika Chips",
     "calories": 160,
@@ -2418,6 +2304,7 @@
   },
   {
     "id": "T18",
+    "card_id": "T16",
     "category": "treat",
     "title": "Mixed Nuts",
     "calories": 150,
