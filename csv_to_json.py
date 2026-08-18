@@ -18,6 +18,13 @@ def split_pipe(value: str) -> list[str]:
     return [part.strip() for part in (value or "").split("|") if part.strip()]
 
 
+def to_int(value: str, default: int = 0) -> int:
+    value = (value or "").strip()
+    if not value:
+        return default
+    return round(float(value))
+
+
 def main() -> None:
     rows = list(csv.DictReader(CSV_PATH.open(encoding="utf-8-sig")))
     recipes = []
@@ -26,16 +33,16 @@ def main() -> None:
             "id": r["id"],
             "category": r["category"].strip().lower(),
             "title": r["title"],
-            "calories": int(r["calories"]),
-            "protein": int(r["protein"]),
-            "carbs": int(r["carbs"]),
-            "fat": int(r["fat"]),
-            "fiber": int(r.get("fiber") or 0),
+            "calories": to_int(r["calories"]),
+            "protein": to_int(r["protein"]),
+            "carbs": to_int(r["carbs"]),
+            "fat": to_int(r["fat"]),
+            "fiber": to_int(r.get("fiber")),
             "servings": r["servings"],
             "prep_time": r["prep_time"],
             "total_time": r["total_time"],
-            "difficulty": int(r.get("difficulty") or 1),
-            "dishes": int(r.get("dishes") or 1),
+            "difficulty": to_int(r.get("difficulty"), default=1),
+            "dishes": to_int(r.get("dishes"), default=1),
             "image": r["image"].replace("assets/", ""),
             "ingredients": split_pipe(r.get("ingredients", "")),
             "method": split_pipe(r.get("method", "")),
