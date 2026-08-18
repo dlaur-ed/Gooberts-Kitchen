@@ -1,4 +1,4 @@
-const APP_VERSION = "3.6";
+const APP_VERSION = "3.8";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -213,7 +213,8 @@ function addRecipeVersion(baseId, fields) {
   const entry = RECIPE_VERSIONS[baseId];
   const num = entry.versions.length + 2; // v1 is always the untouched original
   const versionId = "v" + num;
-  entry.versions.push({ versionId, versionLabel: "Version " + num, ...fields, id: baseId });
+  const base = RECIPES.find(r => r.id === baseId);
+  entry.versions.push({ versionId, versionLabel: "Version " + num, ...fields, id: baseId, card_id: base ? base.card_id : undefined });
   if (!saveRecipeVersions(RECIPE_VERSIONS)) {
     entry.versions.pop(); // keep memory consistent with what's actually persisted
     return null;
@@ -289,6 +290,22 @@ function tallyForDate(date) {
     acc.fiber += (typeof r.fiber === "number" && !Number.isNaN(r.fiber) ? r.fiber : 0);
     return acc;
   }, { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
+}
+
+// What's actually been eaten today — checked-off planned meals AND snacks
+// logged directly from Snack Corner both write to COOK_LOG, so this is the
+// real "consumed so far" total, distinct from tallyForDate's "planned" total.
+function actualTallyForDate(date) {
+  const entries = COOK_LOG.filter(e => e.date === date);
+  return entries.reduce((acc, e) => {
+    const r = findRecipeById(e.recipeId);
+    if (!r) return acc;
+    acc.calories += (typeof r.calories === "number" ? r.calories : 0);
+    acc.protein += (typeof r.protein === "number" ? r.protein : 0);
+    acc.carbs += (typeof r.carbs === "number" ? r.carbs : 0);
+    acc.fat += (typeof r.fat === "number" ? r.fat : 0);
+    return acc;
+  }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
 }
 
 // ---------- Macro goals ----------
@@ -964,7 +981,7 @@ function renderDetail(id, previewVersionId) {
         <span class="cat-tag" ${r.isEasterEgg ? 'style="background:#5c7a1e"' : `style="background:var(--${r.category})"`}>${r.isEasterEgg ? "☢️ Classified" : (CATEGORY_LABELS[r.category] || r.category)}</span>
         <div class="hero-heart">${heartButton(r.id, "lg")}</div>
       </div>
-      <h1>${r.title}</h1>
+      <h1>${r.title}${r.card_id ? `<span class="card-id-tag">Card ${r.card_id}</span>` : ""}</h1>
       ${actionRow}
       <div class="macro-row">
         ${macroCell("🔥", r.calories, "", "kcal")}
@@ -1575,10 +1592,16 @@ function renderStats() {
   `;
 }
 
+function removeCookLogEntry(timestamp) {
+  COOK_LOG = COOK_LOG.filter(e => e.timestamp !== timestamp);
+  saveCookLog(COOK_LOG);
+  refreshStreakAndTokens();
+}
+
 // ---------- Snack Corner ----------
 function renderSnackCorner() {
   refreshProgress();
-  const tally = tallyForDate(selectedDate);
+  const tally = actualTallyForDate(selectedDate);
   const remainingCal = Math.max(0, GOALS.calories - tally.calories);
   const remainingProtein = Math.max(0, GOALS.protein - tally.protein);
 
@@ -1602,6 +1625,23 @@ function renderSnackCorner() {
           <button class="snack-eat-btn" data-snack="${s.id}">I ate this</button>
         </div>`).join("")
     : `<p class="empty-state small">Nothing fits your remaining budget right now — nice work today! 🎉</p>`;
+
+  const eatenToday = COOK_LOG.filter(e => e.date === selectedDate).sort((a, b) => b.timestamp - a.timestamp);
+  const eatenTodayHTML = eatenToday.length
+    ? eatenToday.map(e => {
+        const r = findRecipeById(e.recipeId);
+        if (!r) return "";
+        return `
+          <div class="snack-suggest-row">
+            ${snackThumb(r)}
+            <div class="stat-row-info">
+              <p class="stat-row-title">${r.title}</p>
+              <p class="stat-row-sub">${r.calories} kcal · ${r.protein}g protein</p>
+            </div>
+            <button class="plan-remove" data-remove-log="${e.timestamp}" aria-label="Remove">✕</button>
+          </div>`;
+      }).join("")
+    : `<p class="empty-state small">Nothing logged yet today.</p>`;
 
   const customListHTML = CUSTOM_SNACKS.length
     ? CUSTOM_SNACKS.map(s => `
@@ -1628,6 +1668,11 @@ function renderSnackCorner() {
           <p class="snack-remaining-num">${remainingCal} kcal left today</p>
           <p class="snack-remaining-sub">${remainingProtein}g protein left</p>
         </div>
+      </div>
+
+      <div class="section">
+        <h2>Eaten Today</h2>
+        ${eatenTodayHTML}
       </div>
 
       <div class="section">
@@ -1671,6 +1716,12 @@ function renderSnackCorner() {
   });
   app.querySelectorAll("[data-delete-snack]").forEach(btn => {
     btn.addEventListener("click", () => { deleteCustomSnack(btn.dataset.deleteSnack); renderSnackCorner(); });
+  });
+  app.querySelectorAll("[data-remove-log]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      removeCookLogEntry(Number(btn.dataset.removeLog));
+      renderSnackCorner();
+    });
   });
   app.querySelectorAll("[data-snack]").forEach(btn => {
     btn.addEventListener("click", () => {

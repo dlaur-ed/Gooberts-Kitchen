@@ -31,6 +31,7 @@ def main() -> None:
     for r in rows:
         recipes.append({
             "id": r["id"],
+            "card_id": r.get("card_id") or r["id"],
             "category": r["category"].strip().lower(),
             "title": r["title"],
             "calories": to_int(r["calories"]),

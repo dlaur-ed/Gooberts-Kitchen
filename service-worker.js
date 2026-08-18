@@ -1,4 +1,4 @@
-const CACHE_NAME = "goobert-kitchen-app-v25";
+const CACHE_NAME = "goobert-kitchen-app-v27";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -29,7 +29,6 @@ const APP_SHELL = [
   "./assets/b16_beans_potato_brunch_bowl.jpg",
   "./assets/b17_banana_split_yogurt_bowl.jpg",
   "./assets/b18_baked_beans_with_pretzel_stick.jpg",
-  "./assets/cottage_cheese_berries.png",
   "./assets/d03_chicken_wraps.jpg",
   "./assets/d04_chicken_fajita_quesadilla.jpg",
   "./assets/d05_chicken_pizza_wrap.jpg",
@@ -56,8 +55,6 @@ const APP_SHELL = [
   "./assets/d26_creamy_pesto_chicken_pasta.jpg",
   "./assets/d27_creamy_mushroom_chicken_pasta.jpg",
   "./assets/d28_chicken_pesto_melt.jpg",
-  "./assets/greek_yogurt_bowl.png",
-  "./assets/lemon_chicken_rice.png",
   "./assets/s03_protein_iced_coffee.jpg",
   "./assets/s04_protein_iced_mocha.jpg",
   "./assets/s05_protein_iced_chocolate_milk.jpg",
