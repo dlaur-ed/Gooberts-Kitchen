@@ -1,4 +1,4 @@
-const CACHE_NAME = "goobert-kitchen-app-v28";
+const CACHE_NAME = "goobert-kitchen-app-v29";
 const APP_SHELL = [
   "./",
   "./index.html",

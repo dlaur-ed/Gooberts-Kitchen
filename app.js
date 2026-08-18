@@ -1,4 +1,4 @@
-const APP_VERSION = "3.9";
+const APP_VERSION = "3.10";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -182,8 +182,19 @@ function addToPlan(date, id) {
   if (!MEAL_PLAN[date].includes(id)) MEAL_PLAN[date].push(id);
   savePlan(MEAL_PLAN);
 }
+// Unlike addToPlan, this always adds even if the id is already present —
+// used when logging something eaten, since eating the same snack twice in a
+// day should genuinely count twice.
+function addToPlanAllowDuplicate(date, id) {
+  if (!MEAL_PLAN[date]) MEAL_PLAN[date] = [];
+  MEAL_PLAN[date].push(id);
+  savePlan(MEAL_PLAN);
+}
 function removeFromPlan(date, id) {
-  if (MEAL_PLAN[date]) MEAL_PLAN[date] = MEAL_PLAN[date].filter(x => x !== id);
+  if (MEAL_PLAN[date]) {
+    const idx = MEAL_PLAN[date].indexOf(id);
+    if (idx !== -1) MEAL_PLAN[date].splice(idx, 1); // remove just one instance, not every matching one
+  }
   savePlan(MEAL_PLAN);
 }
 // ---------- Recipe Versions (edits to preloaded recipes, without losing the original) ----------
@@ -316,14 +327,16 @@ function dayIntentTally(date) {
     acc.protein += (typeof r.protein === "number" ? r.protein : 0);
     acc.carbs += (typeof r.carbs === "number" ? r.carbs : 0);
     acc.fat += (typeof r.fat === "number" ? r.fat : 0);
+    acc.fiber += (typeof r.fiber === "number" && !Number.isNaN(r.fiber) ? r.fiber : 0);
     return acc;
-  }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }, { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
 
   return {
     calories: planned.calories + extra.calories,
     protein: planned.protein + extra.protein,
     carbs: planned.carbs + extra.carbs,
     fat: planned.fat + extra.fat,
+    fiber: planned.fiber + extra.fiber,
     plannedCalories: planned.calories,
     extraCalories: extra.calories,
   };
@@ -496,6 +509,7 @@ function deleteCustomSnack(id) {
 function logSnackEaten(date, snack) {
   COOK_LOG.push({ date, recipeId: snack.id, category: snack.category, timestamp: Date.now() });
   saveCookLog(COOK_LOG);
+  addToPlanAllowDuplicate(date, snack.id);
   refreshStreakAndTokens();
 }
 
@@ -1331,7 +1345,7 @@ let planCategory = "breakfast";
 
 function renderPlan() {
   refreshProgress();
-  const tally = tallyForDate(selectedDate);
+  const tally = dayIntentTally(selectedDate);
   const ids = MEAL_PLAN[selectedDate] || [];
   const planned = ids.map(findRecipeById).filter(Boolean);
 
@@ -1613,9 +1627,10 @@ function renderStats() {
   `;
 }
 
-function removeCookLogEntry(timestamp) {
+function removeCookLogEntry(timestamp, date, recipeId) {
   COOK_LOG = COOK_LOG.filter(e => e.timestamp !== timestamp);
   saveCookLog(COOK_LOG);
+  if (date && recipeId) removeFromPlan(date, recipeId);
   refreshStreakAndTokens();
 }
 
@@ -1659,7 +1674,7 @@ function renderSnackCorner() {
               <p class="stat-row-title">${r.title}</p>
               <p class="stat-row-sub">${r.calories} kcal · ${r.protein}g protein</p>
             </div>
-            <button class="plan-remove" data-remove-log="${e.timestamp}" aria-label="Remove">✕</button>
+            <button class="plan-remove" data-remove-log="${e.timestamp}" data-remove-log-recipe="${e.recipeId}" aria-label="Remove">✕</button>
           </div>`;
       }).join("")
     : `<p class="empty-state small">Nothing logged yet today.</p>`;
@@ -1741,7 +1756,7 @@ function renderSnackCorner() {
   });
   app.querySelectorAll("[data-remove-log]").forEach(btn => {
     btn.addEventListener("click", () => {
-      removeCookLogEntry(Number(btn.dataset.removeLog));
+      removeCookLogEntry(Number(btn.dataset.removeLog), selectedDate, btn.dataset.removeLogRecipe);
       renderSnackCorner();
     });
   });
