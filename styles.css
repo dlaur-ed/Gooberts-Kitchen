@@ -805,6 +805,7 @@ footer.tag-line { text-align: center; font-size: 11px; color: var(--ink-soft); p
 .snack-corner-mascot { width: 48px; flex-shrink: 0; }
 .snack-remaining-num { margin: 0; font-size: 18px; font-weight: 800; color: #9d6b00; }
 .snack-remaining-sub { margin: 0; font-size: 12px; font-weight: 700; color: #9d6b00; opacity: 0.8; }
+.snack-remaining-breakdown { margin: 4px 0 0; font-size: 10px; font-weight: 600; color: #9d6b00; opacity: 0.65; }
 .snack-suggest-row {
   display: flex;
   align-items: center;

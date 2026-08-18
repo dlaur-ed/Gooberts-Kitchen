@@ -1,4 +1,4 @@
-const APP_VERSION = "3.8";
+const APP_VERSION = "3.9";
 
 const CATEGORY_LABELS = {
   breakfast: "Breakfast",
@@ -295,9 +295,21 @@ function tallyForDate(date) {
 // What's actually been eaten today — checked-off planned meals AND snacks
 // logged directly from Snack Corner both write to COOK_LOG, so this is the
 // real "consumed so far" total, distinct from tallyForDate's "planned" total.
-function actualTallyForDate(date) {
+// Snack Corner's "remaining budget" needs to account for the WHOLE day's
+// intent, not just what's been logged so far — otherwise a planned-but-not-
+// yet-eaten dinner is invisible, and someone can snack right up to a number
+// that ignores a meal still coming. This combines:
+//   - everything planned for the day (tallyForDate)
+//   - PLUS any logged/eaten item that ISN'T part of the plan (a spontaneous
+//     snack, or extra helpings) — planned items already checked off are not
+//     double-counted, since they're already included via the plan.
+function dayIntentTally(date) {
+  const planned = tallyForDate(date);
+  const plannedIds = new Set(MEAL_PLAN[date] || []);
   const entries = COOK_LOG.filter(e => e.date === date);
-  return entries.reduce((acc, e) => {
+
+  const extra = entries.reduce((acc, e) => {
+    if (plannedIds.has(e.recipeId)) return acc; // already counted via the plan
     const r = findRecipeById(e.recipeId);
     if (!r) return acc;
     acc.calories += (typeof r.calories === "number" ? r.calories : 0);
@@ -306,6 +318,15 @@ function actualTallyForDate(date) {
     acc.fat += (typeof r.fat === "number" ? r.fat : 0);
     return acc;
   }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+  return {
+    calories: planned.calories + extra.calories,
+    protein: planned.protein + extra.protein,
+    carbs: planned.carbs + extra.carbs,
+    fat: planned.fat + extra.fat,
+    plannedCalories: planned.calories,
+    extraCalories: extra.calories,
+  };
 }
 
 // ---------- Macro goals ----------
@@ -1601,7 +1622,7 @@ function removeCookLogEntry(timestamp) {
 // ---------- Snack Corner ----------
 function renderSnackCorner() {
   refreshProgress();
-  const tally = actualTallyForDate(selectedDate);
+  const tally = dayIntentTally(selectedDate);
   const remainingCal = Math.max(0, GOALS.calories - tally.calories);
   const remainingProtein = Math.max(0, GOALS.protein - tally.protein);
 
@@ -1667,6 +1688,7 @@ function renderSnackCorner() {
         <div>
           <p class="snack-remaining-num">${remainingCal} kcal left today</p>
           <p class="snack-remaining-sub">${remainingProtein}g protein left</p>
+          <p class="snack-remaining-breakdown">Includes ${Math.round(tally.plannedCalories)} kcal planned${tally.extraCalories > 0 ? ` + ${Math.round(tally.extraCalories)} kcal already logged` : ""}</p>
         </div>
       </div>
 
